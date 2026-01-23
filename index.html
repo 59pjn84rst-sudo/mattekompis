@@ -6,16 +6,13 @@
 <title>Mattepromenaden</title>
 
 <style>
-/* ===== FIX iOS SAFARI TOUCH ===== */
+/* ===== BAS ===== */
 * {
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
 }
 
-button {
-  touch-action: none;
-}
 body {
   margin: 0;
   font-family: system-ui, sans-serif;
@@ -23,7 +20,7 @@ body {
   overflow: hidden;
 }
 
-/* ===== GAME ===== */
+/* ===== SPEL ===== */
 #game {
   position: relative;
   width: 100vw;
@@ -34,13 +31,12 @@ body {
 
 #world {
   position: absolute;
-  bottom: 0;
   left: 0;
-  height: 100%;
+  bottom: 0;
   width: 3000px;
+  height: 100%;
 }
 
-/* MARK */
 .ground {
   position: absolute;
   bottom: 0;
@@ -49,7 +45,7 @@ body {
   background: #22c55e;
 }
 
-/* ===== GUBBE (CSS) ===== */
+/* ===== GUBBE (CSS, alltid synlig) ===== */
 #player {
   position: absolute;
   left: 40%;
@@ -96,17 +92,7 @@ body {
   border-radius: 6px;
 }
 
-/* Matteblock */
-.mathBlock {
-  position: absolute;
-  width: 40px;
-  height: 40px;
-  background: #a855f7;
-  bottom: 120px;
-  border-radius: 6px;
-}
-
-/* ===== CONTROLS ===== */
+/* ===== KONTROLLER ===== */
 #controls {
   display: flex;
   justify-content: center;
@@ -122,6 +108,7 @@ button {
   border: none;
   background: #1e3a8a;
   color: white;
+  touch-action: none;
 }
 </style>
 </head>
@@ -131,10 +118,6 @@ button {
 <div id="game">
   <div id="world">
     <div class="ground"></div>
-
-    <div class="mathBlock" style="left:400px"></div>
-    <div class="mathBlock" style="left:900px"></div>
-    <div class="mathBlock" style="left:1400px"></div>
   </div>
 
   <!-- GUBBE -->
@@ -150,12 +133,13 @@ button {
 </div>
 
 <div id="controls">
-  <button ontouchstart="left=true" ontouchend="left=false">⬅️</button>
-  <button ontouchstart="jump()">⬆️</button>
-  <button ontouchstart="right=true" ontouchend="right=false">➡️</button>
+  <button id="leftBtn">⬅️</button>
+  <button id="jumpBtn">⬆️</button>
+  <button id="rightBtn">➡️</button>
 </div>
 
 <script>
+/* ===== SPELLOGIK ===== */
 let worldX = 0;
 let vy = 0;
 let onGround = true;
@@ -166,54 +150,56 @@ const gravity = 0.6;
 const world = document.getElementById("world");
 const player = document.getElementById("player");
 
-function jump() {
-  if (onGround) {
-    vy = 10;
-    onGround = false;
-  }
-}
-
-function loop() {
-  if (right) worldX -= 3;
-  if (left) worldX += 3;
-
-  vy -= gravity;
-
-  if (!onGround) {
-    player.style.bottom = (parseFloat(player.style.bottom || 80) + vy) + "px";
-  }
-
-  if (parseFloat(player.style.bottom) <= 80) {
-    player.style.bottom = "80px";
-    vy = 0;
-    onGround = true;
-  }
-
-  world.style.left = worldX + "px";
-  requestAnimationFrame(loop);
-}
-
-loop();
+/* ===== STYRNING ===== */
 const leftBtn = document.getElementById("leftBtn");
 const rightBtn = document.getElementById("rightBtn");
 const jumpBtn = document.getElementById("jumpBtn");
 
-leftBtn.addEventListener("pointerdown", e => { e.preventDefault(); left = true; });
+leftBtn.addEventListener("pointerdown", e => {
+  e.preventDefault();
+  left = true;
+});
 leftBtn.addEventListener("pointerup", () => left = false);
 leftBtn.addEventListener("pointerleave", () => left = false);
 
-rightBtn.addEventListener("pointerdown", e => { e.preventDefault(); right = true; });
+rightBtn.addEventListener("pointerdown", e => {
+  e.preventDefault();
+  right = true;
+});
 rightBtn.addEventListener("pointerup", () => right = false);
 rightBtn.addEventListener("pointerleave", () => right = false);
 
 jumpBtn.addEventListener("pointerdown", e => {
   e.preventDefault();
-  jump();
+  if (onGround) {
+    vy = 10;
+    onGround = false;
+  }
 });
+
+/* ===== LOOP ===== */
+function loop() {
+  if (right) worldX -= 3;
+  if (left) worldX += 3;
+
+  vy -= gravity;
+  let bottom = parseFloat(player.style.bottom || 80);
+  bottom += vy;
+
+  if (bottom <= 80) {
+    bottom = 80;
+    vy = 0;
+    onGround = true;
+  }
+
+  player.style.bottom = bottom + "px";
+  world.style.left = worldX + "px";
+
+  requestAnimationFrame(loop);
+}
+
+loop();
 </script>
 
 </body>
 </html>
-<button id="leftBtn">⬅️</button>
-<button id="jumpBtn">⬆️</button>
-<button id="rightBtn">➡️</button>
