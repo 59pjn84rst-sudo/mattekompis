@@ -21,7 +21,7 @@ body {
   padding: 18px;
 }
 
-/* Rutnät */
+/* Rutnät: 3 kolumner, 4 rader */
 .grid {
   position: relative;
   width: 168px;
@@ -37,7 +37,7 @@ body {
   position: absolute;
   inset: 0;
   background:
-    /* lodräta linjer */
+    /* Lodräta linjer */
     linear-gradient(to right,
       transparent 0,
       transparent 56px,
@@ -49,7 +49,7 @@ body {
       #000 114px,
       transparent 114px
     ),
-    /* horisontella linjer */
+    /* Horisontella linjer */
     linear-gradient(to bottom,
       transparent 0,
       transparent 63px,
@@ -59,18 +59,18 @@ body {
 
       transparent 126px,
       #000 126px,
-      #000 132px,   /* FET LINJE */
-      transparent 132px,
+      #000 128px,
+      transparent 128px,
 
       transparent 189px,
       #000 189px,
-      #000 191px,
-      transparent 191px
+      #000 195px,   /* FET LINJE */
+      transparent 195px
     );
   pointer-events: none;
 }
 
-/* Innehåll i rutorna */
+/* Cellinnehåll */
 .cell {
   display: flex;
   align-items: center;
@@ -93,6 +93,11 @@ body {
 .op {
   font-size: 2.2rem;
   font-weight: 600;
+}
+
+/* Ljusgrå markerade rutor */
+.grey {
+  background: #f1f5f9; /* mycket ljus grå */
 }
 
 /* Input */
@@ -122,18 +127,18 @@ input {
     <div class="cell tens">1</div>
     <div class="cell ones">5</div>
 
-    <!-- Rad 3 (linjen ligger här) -->
+    <!-- Rad 3 -->
     <div class="cell"></div>
-    <div class="cell"></div>
-    <div class="cell"></div>
+    <div class="cell tens"></div>
+    <div class="cell ones grey"></div>
 
-    <!-- Rad 4 (svar) -->
+    <!-- Rad 4 (under fet linje) -->
     <div class="cell"></div>
     <div class="cell tens"><input></div>
-    <div class="cell ones"><input></div>
+    <div class="cell ones grey"><input></div>
 
   </div>
 </div>
 
 </body>
-</html> 
+</html>
