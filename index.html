@@ -8,11 +8,12 @@
 <style>
 body {
   margin: 0;
+  font-family: system-ui, sans-serif;
   background: #60a5fa;
   overflow: hidden;
-  font-family: system-ui, sans-serif;
 }
 
+/* ===== SPELPLAN ===== */
 #game {
   position: relative;
   width: 100vw;
@@ -20,49 +21,71 @@ body {
   background: linear-gradient(#60a5fa, #86efac);
 }
 
-#ground {
+/* Mark */
+.ground {
   position: absolute;
   bottom: 0;
-  width: 200%;
   height: 80px;
   background: #22c55e;
 }
 
+/* Plattform */
+.platform {
+  position: absolute;
+  height: 20px;
+  background: #16a34a;
+}
+
+/* Gubbe (sprite placeholder) */
 #player {
   position: absolute;
+  width: 42px;
+  height: 64px;
   bottom: 80px;
   left: 40px;
-  width: 40px;
-  height: 40px;
-  background: #facc15;
+  background: linear-gradient(#fde047, #facc15);
   border-radius: 10px;
 }
 
-.block {
+/* Matteblock */
+.mathBlock {
   position: absolute;
-  bottom: 120px;
   width: 40px;
   height: 40px;
   background: #a855f7;
   border-radius: 6px;
+  bottom: 120px;
 }
 
+/* Mål */
+#goal {
+  position: absolute;
+  width: 30px;
+  height: 120px;
+  background: #ef4444;
+  right: 40px;
+  bottom: 80px;
+}
+
+/* ===== KONTROLLER ===== */
 #controls {
   display: flex;
   justify-content: center;
   gap: 30px;
-  margin-top: 20px;
+  padding: 12px;
+  background: #0f172a;
 }
 
 button {
   font-size: 1.8rem;
-  padding: 14px 20px;
+  padding: 12px 18px;
   border-radius: 14px;
   border: none;
   background: #1e3a8a;
   color: white;
 }
 
+/* ===== MATTE ===== */
 #math {
   position: fixed;
   inset: 0;
@@ -73,44 +96,80 @@ button {
 }
 
 #mathBox {
-  background: #fff;
-  border-radius: 24px;
+  background: white;
+  border-radius: 20px;
   padding: 20px;
-  width: 90%;
-  max-width: 420px;
   text-align: center;
 }
 
-.row {
+.grid {
+  display: grid;
+  grid-template-columns: 60px 60px;
+  grid-template-rows: 60px 60px 10px 60px;
+  gap: 2px;
+}
+
+.cell {
+  border: 2px solid #94a3b8;
+  font-size: 2rem;
   display: flex;
+  align-items: center;
   justify-content: center;
-  flex-wrap: wrap;
 }
 
-.ten {
-  width: 40px;
-  height: 20px;
-  background: #3b82f6;
-  margin: 4px;
-  border-radius: 6px;
+.blue { color: #2563eb; font-weight: 600; }
+.green { color: #16a34a; font-weight: 600; }
+
+.line {
+  grid-column: span 2;
+  height: 4px;
+  background: #334155;
 }
 
-.one {
-  width: 20px;
-  height: 20px;
-  background: #fde047;
-  margin: 3px;
-  border-radius: 4px;
+input {
+  width: 100%;
+  height: 100%;
+  font-size: 2rem;
+  text-align: center;
+  border: none;
+  background: #fefce8;
+}
+
+/* ===== AUDIO ===== */
+#soundToggle {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background: #0f172a;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 0.9rem;
 }
 </style>
 </head>
 
 <body>
 
+<!-- AUDIO -->
+<audio id="bgm" src="audio/background.mp3" loop></audio>
+<audio id="finish" src="audio/finish.mp3"></audio>
+<audio id="applause" src="audio/applause.mp3"></audio>
+
+<div id="soundToggle" onclick="toggleSound()">🔊</div>
+
 <div id="game">
-  <div id="ground"></div>
+  <div class="ground" style="width:2000px"></div>
+
   <div id="player"></div>
-  <div class="block" id="mathBlock" style="left: 400px;"></div>
+
+  <!-- Matteblock (regelbundet men olika platser) -->
+  <div class="mathBlock" style="left:300px"></div>
+  <div class="mathBlock" style="left:650px"></div>
+  <div class="mathBlock" style="left:1050px"></div>
+
+  <!-- Mål -->
+  <div id="goal"></div>
 </div>
 
 <div id="controls">
@@ -119,25 +178,53 @@ button {
   <button ontouchstart="right=true" ontouchend="right=false">➡️</button>
 </div>
 
+<!-- MATTE -->
 <div id="math">
   <div id="mathBox">
-    <h3>Bygg tal</h3>
-    <div class="row" id="tens"></div>
-    <div class="row" id="ones"></div>
+    <div class="grid">
+      <div class="cell blue">5</div>
+      <div class="cell blue">8</div>
+      <div class="cell green">3</div>
+      <div class="cell green">4</div>
+      <div class="line"></div>
+      <div class="cell"><input></div>
+      <div class="cell"><input></div>
+    </div>
+    <p>Var stolt över dig själv 💛</p>
     <button onclick="closeMath()">Fortsätt</button>
   </div>
 </div>
 
 <script>
-let player = document.getElementById("player");
-let math = document.getElementById("math");
-let x = 40;
-let y = 80;
-let vy = 0;
-let left = false;
-let right = false;
+let x = 40, y = 80, vy = 0;
+let left=false, right=false, onGround=true;
 let gravity = 0.6;
-let onGround = true;
+let soundOn = true;
+
+const player = document.getElementById("player");
+const bgm = document.getElementById("bgm");
+
+function startMusic() {
+  if (soundOn) {
+    bgm.volume = 0.4;
+    bgm.play();
+  }
+  document.removeEventListener("touchstart", startMusic);
+}
+document.addEventListener("touchstart", startMusic);
+
+function toggleSound() {
+  soundOn = !soundOn;
+  bgm.muted = !soundOn;
+  document.getElementById("soundToggle").innerText = soundOn ? "🔊" : "🔇";
+}
+
+function jump() {
+  if (onGround) {
+    vy = 10;
+    onGround = false;
+  }
+}
 
 function gameLoop() {
   if (left) x -= 3;
@@ -155,46 +242,34 @@ function gameLoop() {
   player.style.left = x + "px";
   player.style.bottom = y + "px";
 
-  let blockX = 400;
-  if (Math.abs(x - blockX) < 30) {
-    openMath();
-  }
+  document.querySelectorAll(".mathBlock").forEach(block => {
+    if (Math.abs(x - block.offsetLeft) < 30) openMath();
+  });
+
+  if (x > window.innerWidth - 80) finishLevel();
 
   requestAnimationFrame(gameLoop);
 }
 
-function jump() {
-  if (onGround) {
-    vy = 10;
-    onGround = false;
-  }
-}
-
 function openMath() {
-  math.style.display = "flex";
+  document.getElementById("math").style.display = "flex";
+  bgm.volume = 0.15;
 }
 
 function closeMath() {
-  math.style.display = "none";
-  x += 50;
+  document.getElementById("math").style.display = "none";
+  bgm.volume = 0.4;
+  x += 60;
 }
 
-function buildVisual() {
-  let tens = document.getElementById("tens");
-  let ones = document.getElementById("ones");
-  tens.innerHTML = "";
-  ones.innerHTML = "";
-
-  let a = 58, b = 34;
-  let total = a + b;
-  let t = Math.floor(total / 10);
-  let o = total % 10;
-
-  for (let i = 0; i < t; i++) tens.innerHTML += "<div class='ten'></div>";
-  for (let i = 0; i < o; i++) ones.innerHTML += "<div class='one'></div>";
+function finishLevel() {
+  bgm.pause();
+  document.getElementById("finish").play();
+  setTimeout(() => {
+    document.getElementById("applause").play();
+  }, 600);
 }
 
-buildVisual();
 gameLoop();
 </script>
 
