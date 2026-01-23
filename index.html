@@ -3,274 +3,114 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mattepromenaden</title>
+<title>Uppställning</title>
 
 <style>
 body {
-  margin: 0;
-  font-family: system-ui, sans-serif;
-  background: #60a5fa;
-  overflow: hidden;
-}
-
-/* ===== SPELPLAN ===== */
-#game {
-  position: relative;
-  width: 100vw;
-  height: 60vh;
-  background: linear-gradient(#60a5fa, #86efac);
-}
-
-/* Mark */
-.ground {
-  position: absolute;
-  bottom: 0;
-  height: 80px;
-  background: #22c55e;
-}
-
-/* Plattform */
-.platform {
-  position: absolute;
-  height: 20px;
-  background: #16a34a;
-}
-
-/* Gubbe (sprite placeholder) */
-#player {
-  position: absolute;
-  width: 42px;
-  height: 64px;
-  bottom: 80px;
-  left: 40px;
-  background: linear-gradient(#fde047, #facc15);
-  border-radius: 10px;
-}
-
-/* Matteblock */
-.mathBlock {
-  position: absolute;
-  width: 40px;
-  height: 40px;
-  background: #a855f7;
-  border-radius: 6px;
-  bottom: 120px;
-}
-
-/* Mål */
-#goal {
-  position: absolute;
-  width: 30px;
-  height: 120px;
-  background: #ef4444;
-  right: 40px;
-  bottom: 80px;
-}
-
-/* ===== KONTROLLER ===== */
-#controls {
+  font-family: -apple-system, system-ui, sans-serif;
+  background: #ecfeff;
   display: flex;
   justify-content: center;
-  gap: 30px;
-  padding: 12px;
-  background: #0f172a;
-}
-
-button {
-  font-size: 1.8rem;
-  padding: 12px 18px;
-  border-radius: 14px;
-  border: none;
-  background: #1e3a8a;
-  color: white;
-}
-
-/* ===== MATTE ===== */
-#math {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.5);
-  display: none;
   align-items: center;
-  justify-content: center;
+  height: 100vh;
 }
 
-#mathBox {
+.wrapper {
   background: white;
-  border-radius: 20px;
   padding: 20px;
-  text-align: center;
+  border-radius: 16px;
 }
 
-.grid {
+.table {
   display: grid;
-  grid-template-columns: 60px 60px;
-  grid-template-rows: 60px 60px 10px 60px;
+  grid-template-columns: 40px 64px 64px;
+  grid-template-rows: 64px 64px 12px 64px;
   gap: 2px;
 }
 
+/* Celler */
 .cell {
   border: 2px solid #94a3b8;
-  font-size: 2rem;
+  font-size: 2.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+}
+
+/* Kolumnfärger (lodrätt) */
+.tens {
+  color: #2563eb; /* blå */
+  font-weight: 600;
+}
+
+.ones {
+  color: #16a34a; /* grön */
+  font-weight: 600;
+}
+
+/* Räknetecken */
+.operator {
+  font-size: 2.4rem;
+  font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.blue { color: #2563eb; font-weight: 600; }
-.green { color: #16a34a; font-weight: 600; }
-
+/* Fet linje under talen */
 .line {
-  grid-column: span 2;
-  height: 4px;
-  background: #334155;
+  grid-column: span 3;
+  height: 6px;
+  background: #0f172a;
 }
 
+/* Inmatning */
 input {
   width: 100%;
   height: 100%;
-  font-size: 2rem;
+  font-size: 2.2rem;
   text-align: center;
   border: none;
   background: #fefce8;
-}
-
-/* ===== AUDIO ===== */
-#soundToggle {
-  position: fixed;
-  top: 10px;
-  right: 10px;
-  background: #0f172a;
-  color: white;
-  padding: 8px 12px;
-  border-radius: 10px;
-  font-size: 0.9rem;
 }
 </style>
 </head>
 
 <body>
 
-<!-- AUDIO -->
-<audio id="bgm" src="audio/background.mp3" loop></audio>
-<audio id="finish" src="audio/finish.mp3"></audio>
-<audio id="applause" src="audio/applause.mp3"></audio>
+<div class="wrapper">
+  <div class="table">
 
-<div id="soundToggle" onclick="toggleSound()">🔊</div>
+    <!-- Rad 1: Tal 1 -->
+    <div></div>
+    <div class="cell tens">3</div>
+    <div class="cell ones">9</div>
 
-<div id="game">
-  <div class="ground" style="width:2000px"></div>
+    <!-- Rad 2: Tal 2 + operator -->
+    <div class="operator" id="op">+</div>
+    <div class="cell tens">1</div>
+    <div class="cell ones">5</div>
 
-  <div id="player"></div>
+    <!-- Fet linje -->
+    <div class="line"></div>
 
-  <!-- Matteblock (regelbundet men olika platser) -->
-  <div class="mathBlock" style="left:300px"></div>
-  <div class="mathBlock" style="left:650px"></div>
-  <div class="mathBlock" style="left:1050px"></div>
-
-  <!-- Mål -->
-  <div id="goal"></div>
-</div>
-
-<div id="controls">
-  <button ontouchstart="left=true" ontouchend="left=false">⬅️</button>
-  <button ontouchstart="jump()">⬆️</button>
-  <button ontouchstart="right=true" ontouchend="right=false">➡️</button>
-</div>
-
-<!-- MATTE -->
-<div id="math">
-  <div id="mathBox">
-    <div class="grid">
-      <div class="cell blue">5</div>
-      <div class="cell blue">8</div>
-      <div class="cell green">3</div>
-      <div class="cell green">4</div>
-      <div class="line"></div>
-      <div class="cell"><input></div>
-      <div class="cell"><input></div>
+    <!-- Rad 3: Svar -->
+    <div></div>
+    <div class="cell tens">
+      <input id="tens">
     </div>
-    <p>Var stolt över dig själv 💛</p>
-    <button onclick="closeMath()">Fortsätt</button>
+    <div class="cell ones">
+      <input id="ones">
+    </div>
+
   </div>
 </div>
 
 <script>
-let x = 40, y = 80, vy = 0;
-let left=false, right=false, onGround=true;
-let gravity = 0.6;
-let soundOn = true;
-
-const player = document.getElementById("player");
-const bgm = document.getElementById("bgm");
-
-function startMusic() {
-  if (soundOn) {
-    bgm.volume = 0.4;
-    bgm.play();
-  }
-  document.removeEventListener("touchstart", startMusic);
-}
-document.addEventListener("touchstart", startMusic);
-
-function toggleSound() {
-  soundOn = !soundOn;
-  bgm.muted = !soundOn;
-  document.getElementById("soundToggle").innerText = soundOn ? "🔊" : "🔇";
-}
-
-function jump() {
-  if (onGround) {
-    vy = 10;
-    onGround = false;
-  }
-}
-
-function gameLoop() {
-  if (left) x -= 3;
-  if (right) x += 3;
-
-  vy -= gravity;
-  y += vy;
-
-  if (y <= 80) {
-    y = 80;
-    vy = 0;
-    onGround = true;
-  }
-
-  player.style.left = x + "px";
-  player.style.bottom = y + "px";
-
-  document.querySelectorAll(".mathBlock").forEach(block => {
-    if (Math.abs(x - block.offsetLeft) < 30) openMath();
-  });
-
-  if (x > window.innerWidth - 80) finishLevel();
-
-  requestAnimationFrame(gameLoop);
-}
-
-function openMath() {
-  document.getElementById("math").style.display = "flex";
-  bgm.volume = 0.15;
-}
-
-function closeMath() {
-  document.getElementById("math").style.display = "none";
-  bgm.volume = 0.4;
-  x += 60;
-}
-
-function finishLevel() {
-  bgm.pause();
-  document.getElementById("finish").play();
-  setTimeout(() => {
-    document.getElementById("applause").play();
-  }, 600);
-}
-
-gameLoop();
+// Sätt räknesätt här:
+const operator = "+"; // byt till "-" vid subtraktion
+document.getElementById("op").innerText = operator;
 </script>
 
 </body>
