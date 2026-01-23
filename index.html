@@ -1,37 +1,3 @@
-<!DOCTYPE html>
-<html lang="sv">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Uppställning</title>
-
-<style>
-body {
-  font-family: -apple-system, system-ui, sans-serif;
-  background: #ecfeff;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-}
-
-/* Ytterram */
-.wrapper {
-  background: white;
-  padding: 18px;
-}
-
-/* Rutnät */
-.grid {
-  position: relative;
-  width: 168px;
-  height: 252px;
-  display: grid;
-  grid-template-columns: 56px 56px 56px;
-  grid-template-rows: 63px 63px 63px 63px;
-}
-
-/* Rita rutlinjer */
 .grid::before {
   content: "";
   position: absolute;
@@ -56,82 +22,16 @@ body {
       #000 63px,
       #000 65px,
       transparent 65px,
+
       transparent 126px,
       #000 126px,
-      #000 128px,
-      transparent 128px,
+      #000 132px,   /* FET LINJE (flyttad upp) */
+      transparent 132px,
+
       transparent 189px,
       #000 189px,
-      #000 195px,
-      transparent 195px
+      #000 191px,
+      transparent 191px
     );
   pointer-events: none;
 }
-
-/* Innehåll i rutorna */
-.cell {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2.1rem;
-}
-
-/* Färger lodrätt */
-.tens {
-  color: #2563eb;
-  font-weight: 600;
-}
-
-.ones {
-  color: #16a34a;
-  font-weight: 600;
-}
-
-/* Operator */
-.op {
-  font-size: 2.2rem;
-  font-weight: 600;
-}
-
-/* Input */
-input {
-  width: 100%;
-  height: 100%;
-  border: none;
-  font-size: 2rem;
-  text-align: center;
-  background: transparent;
-}
-</style>
-</head>
-
-<body>
-
-<div class="wrapper">
-  <div class="grid">
-
-    <!-- Rad 1 -->
-    <div class="cell"></div>
-    <div class="cell tens">3</div>
-    <div class="cell ones">9</div>
-
-    <!-- Rad 2 -->
-    <div class="cell op">+</div>
-    <div class="cell tens">1</div>
-    <div class="cell ones">5</div>
-
-    <!-- Rad 3 (tom, linjen går här) -->
-    <div class="cell"></div>
-    <div class="cell"></div>
-    <div class="cell"></div>
-
-    <!-- Rad 4 (svar) -->
-    <div class="cell"></div>
-    <div class="cell tens"><input></div>
-    <div class="cell ones"><input></div>
-
-  </div>
-</div>
-
-</body>
-</html>
