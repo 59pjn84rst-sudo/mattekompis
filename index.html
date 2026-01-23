@@ -15,13 +15,14 @@ body {
   height: 100vh;
 }
 
-/* Ytterram */
+/* Ytterram runt hela rutnätet */
 .wrapper {
   background: white;
   padding: 18px;
+  border: 3px solid #0f172a;
 }
 
-/* Rutnät: 3 kolumner, 4 rader */
+/* Rutnät */
 .grid {
   position: relative;
   width: 168px;
@@ -64,7 +65,7 @@ body {
 
       transparent 189px,
       #000 189px,
-      #000 195px,   /* FET LINJE */
+      #000 195px,   /* FET LINJE (kvar) */
       transparent 195px
     );
   pointer-events: none;
@@ -95,9 +96,9 @@ body {
   font-weight: 600;
 }
 
-/* Ljusgrå markerade rutor */
+/* Ljusgrå skuggning */
 .grey {
-  background: #f1f5f9; /* mycket ljus grå */
+  background: #f1f5f9;
 }
 
 /* Input */
@@ -117,22 +118,22 @@ input {
 <div class="wrapper">
   <div class="grid">
 
-    <!-- Rad 1 -->
+    <!-- Rad 1 (tom) -->
+    <div class="cell"></div>
+    <div class="cell"></div>
+    <div class="cell"></div>
+
+    <!-- Rad 2 (Tal 1) -->
     <div class="cell"></div>
     <div class="cell tens">3</div>
-    <div class="cell ones">9</div>
+    <div class="cell ones grey">9</div>
 
-    <!-- Rad 2 -->
+    <!-- Rad 3 (Tal 2 + operator) -->
     <div class="cell op">+</div>
     <div class="cell tens">1</div>
-    <div class="cell ones">5</div>
+    <div class="cell ones grey">5</div>
 
-    <!-- Rad 3 -->
-    <div class="cell"></div>
-    <div class="cell tens"></div>
-    <div class="cell ones grey"></div>
-
-    <!-- Rad 4 (under fet linje) -->
+    <!-- Rad 4 (Svar – under fet linje) -->
     <div class="cell"></div>
     <div class="cell tens"><input></div>
     <div class="cell ones grey"><input></div>
