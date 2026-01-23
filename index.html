@@ -6,7 +6,6 @@
 <title>Mattepromenaden</title>
 
 <style>
-/* ===== BAS ===== */
 * {
   -webkit-user-select: none;
   user-select: none;
@@ -31,24 +30,40 @@ body {
 
 #world {
   position: absolute;
-  left: 0;
   bottom: 0;
-  width: 3000px;
+  left: 0;
   height: 100%;
+  width: 3000px;
 }
 
+/* MARK */
 .ground {
   position: absolute;
   bottom: 0;
   height: 80px;
   width: 3000px;
-  background: #22c55e;
+  background: repeating-linear-gradient(
+    90deg,
+    #22c55e,
+    #22c55e 80px,
+    #16a34a 80px,
+    #16a34a 160px
+  );
 }
 
-/* ===== GUBBE (CSS, alltid synlig) ===== */
+/* HINDER */
+.obstacle {
+  position: absolute;
+  width: 50px;
+  height: 40px;
+  background: #7c3aed;
+  border-radius: 8px;
+}
+
+/* ===== GUBBE ===== */
 #player {
   position: absolute;
-  left: 40%;
+  left: 45%;
   bottom: 80px;
   width: 40px;
   height: 64px;
@@ -118,6 +133,11 @@ button {
 <div id="game">
   <div id="world">
     <div class="ground"></div>
+
+    <!-- HINDER -->
+    <div class="obstacle" style="left:500px; bottom:80px"></div>
+    <div class="obstacle" style="left:900px; bottom:160px"></div>
+    <div class="obstacle" style="left:1300px; bottom:80px"></div>
   </div>
 
   <!-- GUBBE -->
@@ -139,49 +159,55 @@ button {
 </div>
 
 <script>
-/* ===== SPELLOGIK ===== */
 let worldX = 0;
 let vy = 0;
 let onGround = true;
 let left = false;
 let right = false;
 const gravity = 0.6;
+const speed = 3;
 
 const world = document.getElementById("world");
 const player = document.getElementById("player");
+const obstacles = document.querySelectorAll(".obstacle");
 
-/* ===== STYRNING ===== */
 const leftBtn = document.getElementById("leftBtn");
 const rightBtn = document.getElementById("rightBtn");
 const jumpBtn = document.getElementById("jumpBtn");
 
-leftBtn.addEventListener("pointerdown", e => {
-  e.preventDefault();
-  left = true;
-});
+leftBtn.addEventListener("pointerdown", e => { e.preventDefault(); left = true; });
 leftBtn.addEventListener("pointerup", () => left = false);
 leftBtn.addEventListener("pointerleave", () => left = false);
 
-rightBtn.addEventListener("pointerdown", e => {
-  e.preventDefault();
-  right = true;
-});
+rightBtn.addEventListener("pointerdown", e => { e.preventDefault(); right = true; });
 rightBtn.addEventListener("pointerup", () => right = false);
 rightBtn.addEventListener("pointerleave", () => right = false);
 
 jumpBtn.addEventListener("pointerdown", e => {
   e.preventDefault();
   if (onGround) {
-    vy = 10;
+    vy = 11;
     onGround = false;
   }
 });
 
-/* ===== LOOP ===== */
-function loop() {
-  if (right) worldX -= 3;
-  if (left) worldX += 3;
+/* KOLLISION */
+function collides(a, b) {
+  return (
+    a.left < b.right &&
+    a.right > b.left &&
+    a.top < b.bottom &&
+    a.bottom > b.top
+  );
+}
 
+function loop() {
+  let nextWorldX = worldX;
+
+  if (right) nextWorldX -= speed;
+  if (left) nextWorldX += speed;
+
+  // hopprörelse
   vy -= gravity;
   let bottom = parseFloat(player.style.bottom || 80);
   bottom += vy;
@@ -193,7 +219,23 @@ function loop() {
   }
 
   player.style.bottom = bottom + "px";
-  world.style.left = worldX + "px";
+
+  // testa kollision
+  let blocked = false;
+  world.style.left = nextWorldX + "px";
+
+  const playerRect = player.getBoundingClientRect();
+
+  obstacles.forEach(ob => {
+    const rect = ob.getBoundingClientRect();
+    if (collides(playerRect, rect)) blocked = true;
+  });
+
+  if (!blocked) {
+    worldX = nextWorldX;
+  } else {
+    world.style.left = worldX + "px";
+  }
 
   requestAnimationFrame(loop);
 }
