@@ -6,6 +6,16 @@
 <title>Mattepromenaden</title>
 
 <style>
+/* ===== FIX iOS SAFARI TOUCH ===== */
+* {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+button {
+  touch-action: none;
+}
 body {
   margin: 0;
   font-family: system-ui, sans-serif;
