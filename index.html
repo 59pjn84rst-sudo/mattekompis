@@ -1,117 +1,202 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mattekompis</title>
-  <style>
-    body {
-      font-family: -apple-system, system-ui, sans-serif;
-      background: #fefce8;
-      margin: 0;
-      padding: 0;
-      text-align: center;
-    }
-    .card {
-      background: #ffffff;
-      border-radius: 24px;
-      padding: 24px;
-      margin: 40px auto;
-      width: 90%;
-      max-width: 420px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.15);
-    }
-    .problem {
-      font-size: 2.4rem;
-      margin: 20px 0;
-    }
-    button {
-      font-size: 1.3rem;
-      padding: 14px;
-      margin: 8px;
-      width: 85%;
-      border-radius: 16px;
-      border: none;
-      background: #bfdbfe;
-      color: #1e3a8a;
-    }
-    .message {
-      font-size: 1.1rem;
-      margin-top: 16px;
-      min-height: 28px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mattepromenaden</title>
+
+<style>
+body {
+  margin: 0;
+  background: #60a5fa;
+  overflow: hidden;
+  font-family: system-ui, sans-serif;
+}
+
+#game {
+  position: relative;
+  width: 100vw;
+  height: 60vh;
+  background: linear-gradient(#60a5fa, #86efac);
+}
+
+#ground {
+  position: absolute;
+  bottom: 0;
+  width: 200%;
+  height: 80px;
+  background: #22c55e;
+}
+
+#player {
+  position: absolute;
+  bottom: 80px;
+  left: 40px;
+  width: 40px;
+  height: 40px;
+  background: #facc15;
+  border-radius: 10px;
+}
+
+.block {
+  position: absolute;
+  bottom: 120px;
+  width: 40px;
+  height: 40px;
+  background: #a855f7;
+  border-radius: 6px;
+}
+
+#controls {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 20px;
+}
+
+button {
+  font-size: 1.8rem;
+  padding: 14px 20px;
+  border-radius: 14px;
+  border: none;
+  background: #1e3a8a;
+  color: white;
+}
+
+#math {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+#mathBox {
+  background: #fff;
+  border-radius: 24px;
+  padding: 20px;
+  width: 90%;
+  max-width: 420px;
+  text-align: center;
+}
+
+.row {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.ten {
+  width: 40px;
+  height: 20px;
+  background: #3b82f6;
+  margin: 4px;
+  border-radius: 6px;
+}
+
+.one {
+  width: 20px;
+  height: 20px;
+  background: #fde047;
+  margin: 3px;
+  border-radius: 4px;
+}
+</style>
 </head>
 
 <body>
 
-  <div class="card">
-    <h2>Mattekompis</h2>
-    <div id="problem" class="problem"></div>
-    <div id="answers"></div>
-    <div id="message" class="message"></div>
+<div id="game">
+  <div id="ground"></div>
+  <div id="player"></div>
+  <div class="block" id="mathBlock" style="left: 400px;"></div>
+</div>
+
+<div id="controls">
+  <button ontouchstart="left=true" ontouchend="left=false">⬅️</button>
+  <button ontouchstart="jump()">⬆️</button>
+  <button ontouchstart="right=true" ontouchend="right=false">➡️</button>
+</div>
+
+<div id="math">
+  <div id="mathBox">
+    <h3>Bygg tal</h3>
+    <div class="row" id="tens"></div>
+    <div class="row" id="ones"></div>
+    <button onclick="closeMath()">Fortsätt</button>
   </div>
+</div>
 
-  <script>
-    var problems = [
-      [58, 34],
-      [39, 15],
-      [63, 28],
-      [47, 26],
-      [54, 19]
-    ];
+<script>
+let player = document.getElementById("player");
+let math = document.getElementById("math");
+let x = 40;
+let y = 80;
+let vy = 0;
+let left = false;
+let right = false;
+let gravity = 0.6;
+let onGround = true;
 
-    var index = 0;
-    var correctAnswer = 0;
+function gameLoop() {
+  if (left) x -= 3;
+  if (right) x += 3;
 
-    function newProblem() {
-      if (index >= problems.length) {
-        document.getElementById("problem").innerText = "Klart för idag";
-        document.getElementById("answers").innerHTML = "";
-        document.getElementById("message").innerText =
-          "Var stolt över dig själv";
-        return;
-      }
+  vy -= gravity;
+  y += vy;
 
-      var a = problems[index][0];
-      var b = problems[index][1];
-      correctAnswer = a + b;
+  if (y <= 80) {
+    y = 80;
+    vy = 0;
+    onGround = true;
+  }
 
-      document.getElementById("problem").innerText = a + " + " + b;
+  player.style.left = x + "px";
+  player.style.bottom = y + "px";
 
-      var options = [correctAnswer, correctAnswer + 1, correctAnswer - 1];
-      options.sort(function () {
-        return Math.random() - 0.5;
-      });
+  let blockX = 400;
+  if (Math.abs(x - blockX) < 30) {
+    openMath();
+  }
 
-      var html = "";
-      for (var i = 0; i < options.length; i++) {
-        html +=
-          "<button onclick=\"check(" +
-          options[i] +
-          ")\">" +
-          options[i] +
-          "</button>";
-      }
+  requestAnimationFrame(gameLoop);
+}
 
-      document.getElementById("answers").innerHTML = html;
-      document.getElementById("message").innerText = "";
-      index++;
-    }
+function jump() {
+  if (onGround) {
+    vy = 10;
+    onGround = false;
+  }
+}
 
-    function check(value) {
-      if (value === correctAnswer) {
-        document.getElementById("message").innerText =
-          "Var stolt över dig själv";
-        setTimeout(newProblem, 600);
-      } else {
-        document.getElementById("message").innerText =
-          "Vi tittar igen";
-      }
-    }
+function openMath() {
+  math.style.display = "flex";
+}
 
-    newProblem();
-  </script>
+function closeMath() {
+  math.style.display = "none";
+  x += 50;
+}
+
+function buildVisual() {
+  let tens = document.getElementById("tens");
+  let ones = document.getElementById("ones");
+  tens.innerHTML = "";
+  ones.innerHTML = "";
+
+  let a = 58, b = 34;
+  let total = a + b;
+  let t = Math.floor(total / 10);
+  let o = total % 10;
+
+  for (let i = 0; i < t; i++) tens.innerHTML += "<div class='ten'></div>";
+  for (let i = 0; i < o; i++) ones.innerHTML += "<div class='one'></div>";
+}
+
+buildVisual();
+gameLoop();
+</script>
 
 </body>
 </html>
