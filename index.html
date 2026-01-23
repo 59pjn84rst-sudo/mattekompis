@@ -3,26 +3,96 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Uppställning</title>
+<title>Mattepromenaden</title>
 
 <style>
 body {
-  font-family: -apple-system, system-ui, sans-serif;
-  background: #ecfeff;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: #60a5fa;
+  overflow: hidden;
 }
 
-/* Ytterram runt hela rutnätet */
+/* ===== GAME ===== */
+#game {
+  position: relative;
+  width: 100vw;
+  height: 60vh;
+  background: linear-gradient(#60a5fa, #86efac);
+}
+
+.ground {
+  position: absolute;
+  bottom: 0;
+  height: 80px;
+  background: #22c55e;
+}
+
+/* PLAYER */
+#player {
+  position: absolute;
+  width: 44px;
+  height: 64px;
+  bottom: 80px;
+  left: 40px;
+  background: url("sprites/player.png") center/contain no-repeat,
+              linear-gradient(#fde047,#facc15);
+}
+
+/* BLOCKS */
+.mathBlock {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  background: #a855f7;
+  bottom: 120px;
+  border-radius: 6px;
+}
+
+#goal {
+  position: absolute;
+  width: 20px;
+  height: 140px;
+  background: repeating-linear-gradient(
+    #ef4444,#ef4444 10px,#fff 10px,#fff 20px
+  );
+  bottom: 80px;
+}
+
+/* ===== CONTROLS ===== */
+#controls {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  padding: 12px;
+  background: #0f172a;
+}
+
+button {
+  font-size: 1.8rem;
+  padding: 12px 18px;
+  border-radius: 14px;
+  border: none;
+  background: #1e3a8a;
+  color: white;
+}
+
+/* ===== MATH ===== */
+#math {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
 .wrapper {
   background: white;
   padding: 18px;
   border: 3px solid #0f172a;
 }
 
-/* Rutnät */
 .grid {
   position: relative;
   width: 168px;
@@ -32,114 +102,164 @@ body {
   grid-template-rows: 63px 63px 63px 63px;
 }
 
-/* Rita rutlinjer + fet linje */
 .grid::before {
-  content: "";
-  position: absolute;
-  inset: 0;
+  content:"";
+  position:absolute; inset:0;
   background:
-    /* Lodräta linjer */
     linear-gradient(to right,
-      transparent 0,
-      transparent 56px,
-      #000 56px,
-      #000 58px,
-      transparent 58px,
-      transparent 112px,
-      #000 112px,
-      #000 114px,
-      transparent 114px
-    ),
-    /* Horisontella linjer */
+      transparent 0,transparent 56px,#000 56px,#000 58px,
+      transparent 58px,transparent 112px,#000 112px,#000 114px,
+      transparent 114px),
     linear-gradient(to bottom,
-      transparent 0,
-      transparent 63px,
-      #000 63px,
-      #000 65px,
+      transparent 0,transparent 63px,#000 63px,#000 65px,
       transparent 65px,
-
-      transparent 126px,
-      #000 126px,
-      #000 128px,
+      transparent 126px,#000 126px,#000 128px,
       transparent 128px,
-
-      transparent 189px,
-      #000 189px,
-      #000 195px,   /* FET LINJE (kvar) */
-      transparent 195px
-    );
-  pointer-events: none;
+      transparent 189px,#000 189px,#000 195px);
 }
 
-/* Cellinnehåll */
-.cell {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2.1rem;
-}
+.cell{display:flex;align-items:center;justify-content:center;font-size:2.1rem}
+.tens{color:#2563eb;font-weight:600}
+.ones{color:#16a34a;font-weight:600}
+.op{font-size:2.2rem;font-weight:600}
+.grey{background:#f1f5f9}
+input{width:100%;height:100%;border:none;font-size:2rem;text-align:center;background:transparent}
 
-/* Lodräta färger */
-.tens {
-  color: #2563eb;
-  font-weight: 600;
-}
-
-.ones {
-  color: #16a34a;
-  font-weight: 600;
-}
-
-/* Operator */
-.op {
-  font-size: 2.2rem;
-  font-weight: 600;
-}
-
-/* Ljusgrå skuggning */
-.grey {
-  background: #f1f5f9;
-}
-
-/* Input */
-input {
-  width: 100%;
-  height: 100%;
-  border: none;
-  font-size: 2rem;
-  text-align: center;
-  background: transparent;
+/* ===== FINISH ===== */
+#finish {
+  position:fixed; inset:0;
+  display:none;
+  background:rgba(15,23,42,.85);
+  color:white;
+  font-size:2rem;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
 }
 </style>
 </head>
 
 <body>
 
-<div class="wrapper">
-  <div class="grid">
+<audio id="bgm" src="audio/background.mp3" loop></audio>
+<audio id="finishSound" src="audio/finish.mp3"></audio>
+<audio id="applause" src="audio/applause.mp3"></audio>
 
-    <!-- Rad 1 (tom) -->
-    <div class="cell"></div>
-    <div class="cell"></div>
-    <div class="cell"></div>
+<div id="game">
+  <div class="ground" id="ground"></div>
+  <div id="player"></div>
+  <div id="goal"></div>
+</div>
 
-    <!-- Rad 2 (Tal 1) -->
-    <div class="cell"></div>
-    <div class="cell tens">3</div>
-    <div class="cell ones grey">9</div>
+<div id="controls">
+  <button ontouchstart="left=true" ontouchend="left=false">⬅️</button>
+  <button ontouchstart="jump()">⬆️</button>
+  <button ontouchstart="right=true" ontouchend="right=false">➡️</button>
+</div>
 
-    <!-- Rad 3 (Tal 2 + operator) -->
-    <div class="cell op">+</div>
-    <div class="cell tens">1</div>
-    <div class="cell ones grey">5</div>
-
-    <!-- Rad 4 (Svar – under fet linje) -->
-    <div class="cell"></div>
-    <div class="cell tens"><input></div>
-    <div class="cell ones grey"><input></div>
-
+<div id="math">
+  <div class="wrapper">
+    <div class="grid" id="grid"></div>
+    <div style="text-align:center;margin-top:10px">
+      <button onclick="closeMath()">Fortsätt</button>
+    </div>
   </div>
 </div>
+
+<div id="finish">
+  <div>🎉 Var stolt över dig själv 🎉</div>
+  <button onclick="nextLevel()">Nästa bana</button>
+</div>
+
+<script>
+let level=0;
+let x=40,y=80,vy=0,left=false,right=false,onGround=true;
+let gravity=0.6,finished=false;
+const levels=[1400,2000];
+
+const bgm=document.getElementById("bgm");
+
+document.addEventListener("touchstart",()=>{
+  bgm.volume=0.4; bgm.play();
+},{once:true});
+
+function jump(){ if(onGround){vy=10;onGround=false;} }
+
+function loop(){
+  if(finished) return;
+  if(left)x-=3;if(right)x+=3;
+  vy-=gravity;y+=vy;
+  if(y<=80){y=80;vy=0;onGround=true;}
+  player.style.left=x+"px";player.style.bottom=y+"px";
+  if(x>levels[level]) finishLevel();
+  requestAnimationFrame(loop);
+}
+
+function randomTask(){
+  let a=Math.floor(Math.random()*40)+10;
+  let b=Math.floor(Math.random()*40)+10;
+  let add=Math.random()>0.5;
+  if(!add && b>a)[a,b]=[b,a];
+  return {a,b,op:add?"+":"-"};
+}
+
+let task=randomTask();
+
+function openMath(){
+  document.getElementById("math").style.display="flex";
+  bgm.volume=0.15;
+  renderTask();
+}
+
+function renderTask(){
+  const g=document.getElementById("grid");
+  g.innerHTML="";
+  const t=task;
+  const at=Math.floor(t.a/10),ao=t.a%10;
+  const bt=Math.floor(t.b/10),bo=t.b%10;
+  const rows=[
+    ["","", ""],
+    ["",at,ao],
+    [t.op,bt,bo],
+    ["","",""]
+  ];
+  rows.flat().forEach((v,i)=>{
+    let d=document.createElement("div");
+    d.className="cell";
+    if(i%3===1)d.classList.add("tens");
+    if(i%3===2)d.classList.add("ones","grey");
+    if(v==="+"||v==="-")d.classList.add("op");
+    if(v!=="")d.innerText=v;
+    g.appendChild(d);
+  });
+}
+
+function closeMath(){
+  document.getElementById("math").style.display="none";
+  bgm.volume=0.4;
+  task=randomTask();
+  x+=80;
+}
+
+function finishLevel(){
+  finished=true;
+  bgm.pause();
+  finishSound.play();
+  setTimeout(()=>applause.play(),600);
+  document.getElementById("finish").style.display="flex";
+}
+
+function nextLevel(){
+  level++;
+  if(level>=levels.length) level=0;
+  x=40;finished=false;
+  document.getElementById("finish").style.display="none";
+  bgm.play();
+  loop();
+}
+
+loop();
+</script>
 
 </body>
 </html>
