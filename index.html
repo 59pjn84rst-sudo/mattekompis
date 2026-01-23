@@ -194,6 +194,22 @@ function loop() {
 }
 
 loop();
+const leftBtn = document.getElementById("leftBtn");
+const rightBtn = document.getElementById("rightBtn");
+const jumpBtn = document.getElementById("jumpBtn");
+
+leftBtn.addEventListener("pointerdown", e => { e.preventDefault(); left = true; });
+leftBtn.addEventListener("pointerup", () => left = false);
+leftBtn.addEventListener("pointerleave", () => left = false);
+
+rightBtn.addEventListener("pointerdown", e => { e.preventDefault(); right = true; });
+rightBtn.addEventListener("pointerup", () => right = false);
+rightBtn.addEventListener("pointerleave", () => right = false);
+
+jumpBtn.addEventListener("pointerdown", e => {
+  e.preventDefault();
+  jump();
+});
 </script>
 
 </body>
