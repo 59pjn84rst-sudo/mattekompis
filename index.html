@@ -15,64 +15,92 @@ body {
   height: 100vh;
 }
 
+/* Ytterram */
 .wrapper {
   background: white;
-  padding: 20px;
-  border-radius: 16px;
+  padding: 18px;
 }
 
-.table {
+/* Rutnät */
+.grid {
+  position: relative;
+  width: 168px;
+  height: 252px;
   display: grid;
-  grid-template-columns: 40px 64px 64px;
-  grid-template-rows: 64px 64px 12px 64px;
-  gap: 2px;
+  grid-template-columns: 56px 56px 56px;
+  grid-template-rows: 63px 63px 63px 63px;
 }
 
-/* Celler */
+/* Rita rutlinjer */
+.grid::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    /* lodräta linjer */
+    linear-gradient(to right,
+      transparent 0,
+      transparent 56px,
+      #000 56px,
+      #000 58px,
+      transparent 58px,
+      transparent 112px,
+      #000 112px,
+      #000 114px,
+      transparent 114px
+    ),
+    /* horisontella linjer */
+    linear-gradient(to bottom,
+      transparent 0,
+      transparent 63px,
+      #000 63px,
+      #000 65px,
+      transparent 65px,
+      transparent 126px,
+      #000 126px,
+      #000 128px,
+      transparent 128px,
+      transparent 189px,
+      #000 189px,
+      #000 195px,
+      transparent 195px
+    );
+  pointer-events: none;
+}
+
+/* Innehåll i rutorna */
 .cell {
-  border: 2px solid #94a3b8;
-  font-size: 2.2rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f8fafc;
+  font-size: 2.1rem;
 }
 
-/* Kolumnfärger (lodrätt) */
+/* Färger lodrätt */
 .tens {
-  color: #2563eb; /* blå */
+  color: #2563eb;
   font-weight: 600;
 }
 
 .ones {
-  color: #16a34a; /* grön */
+  color: #16a34a;
   font-weight: 600;
 }
 
-/* Räknetecken */
-.operator {
-  font-size: 2.4rem;
+/* Operator */
+.op {
+  font-size: 2.2rem;
   font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
-/* Fet linje under talen */
-.line {
-  grid-column: span 3;
-  height: 6px;
-  background: #0f172a;
-}
-
-/* Inmatning */
+/* Input */
 input {
   width: 100%;
   height: 100%;
-  font-size: 2.2rem;
-  text-align: center;
   border: none;
-  background: #fefce8;
+  font-size: 2rem;
+  text-align: center;
+  background: transparent;
 }
 </style>
 </head>
@@ -80,38 +108,30 @@ input {
 <body>
 
 <div class="wrapper">
-  <div class="table">
+  <div class="grid">
 
-    <!-- Rad 1: Tal 1 -->
-    <div></div>
+    <!-- Rad 1 -->
+    <div class="cell"></div>
     <div class="cell tens">3</div>
     <div class="cell ones">9</div>
 
-    <!-- Rad 2: Tal 2 + operator -->
-    <div class="operator" id="op">+</div>
+    <!-- Rad 2 -->
+    <div class="cell op">+</div>
     <div class="cell tens">1</div>
     <div class="cell ones">5</div>
 
-    <!-- Fet linje -->
-    <div class="line"></div>
+    <!-- Rad 3 (tom, linjen går här) -->
+    <div class="cell"></div>
+    <div class="cell"></div>
+    <div class="cell"></div>
 
-    <!-- Rad 3: Svar -->
-    <div></div>
-    <div class="cell tens">
-      <input id="tens">
-    </div>
-    <div class="cell ones">
-      <input id="ones">
-    </div>
+    <!-- Rad 4 (svar) -->
+    <div class="cell"></div>
+    <div class="cell tens"><input></div>
+    <div class="cell ones"><input></div>
 
   </div>
 </div>
-
-<script>
-// Sätt räknesätt här:
-const operator = "+"; // byt till "-" vid subtraktion
-document.getElementById("op").innerText = operator;
-</script>
 
 </body>
 </html>
