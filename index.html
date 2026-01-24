@@ -33,7 +33,7 @@ body {
   bottom: 0;
   left: 0;
   height: 100%;
-  width: 3000px;
+  width: 3200px;
 }
 
 /* MARK */
@@ -41,7 +41,7 @@ body {
   position: absolute;
   bottom: 0;
   height: 80px;
-  width: 3000px;
+  width: 3200px;
   background: repeating-linear-gradient(
     90deg,
     #22c55e,
@@ -49,6 +49,15 @@ body {
     #16a34a 80px,
     #16a34a 160px
   );
+}
+
+/* GROPAR (skär bort mark visuellt) */
+.pit {
+  position: absolute;
+  bottom: 0;
+  width: 120px;
+  height: 80px;
+  background: #60a5fa;
 }
 
 /* HINDER */
@@ -134,10 +143,13 @@ button {
   <div id="world">
     <div class="ground"></div>
 
+    <!-- GROPAR -->
+    <div class="pit" style="left:600px"></div>
+    <div class="pit" style="left:1400px"></div>
+
     <!-- HINDER -->
-    <div class="obstacle" style="left:500px; bottom:80px"></div>
-    <div class="obstacle" style="left:900px; bottom:160px"></div>
-    <div class="obstacle" style="left:1300px; bottom:80px"></div>
+    <div class="obstacle" style="left:900px; bottom:80px"></div>
+    <div class="obstacle" style="left:1800px; bottom:80px"></div>
   </div>
 
   <!-- GUBBE -->
@@ -169,7 +181,7 @@ const speed = 3;
 
 const world = document.getElementById("world");
 const player = document.getElementById("player");
-const obstacles = document.querySelectorAll(".obstacle");
+const pits = document.querySelectorAll(".pit");
 
 const leftBtn = document.getElementById("leftBtn");
 const rightBtn = document.getElementById("rightBtn");
@@ -191,51 +203,47 @@ jumpBtn.addEventListener("pointerdown", e => {
   }
 });
 
-/* KOLLISION */
-function collides(a, b) {
-  return (
-    a.left < b.right &&
-    a.right > b.left &&
-    a.top < b.bottom &&
-    a.bottom > b.top
-  );
-}
-
 function loop() {
-  let nextWorldX = worldX;
+  if (right) worldX -= speed;
+  if (left) worldX += speed;
 
-  if (right) nextWorldX -= speed;
-  if (left) nextWorldX += speed;
-
-  // hopprörelse
   vy -= gravity;
   let bottom = parseFloat(player.style.bottom || 80);
   bottom += vy;
 
-  if (bottom <= 80) {
+  // kolla om vi är över en grop
+  let falling = false;
+  const playerX = player.getBoundingClientRect().left;
+
+  pits.forEach(pit => {
+    const rect = pit.getBoundingClientRect();
+    if (
+      playerX > rect.left &&
+      playerX < rect.right &&
+      bottom <= 80
+    ) {
+      falling = true;
+    }
+  });
+
+  if (falling) {
+    bottom -= 6;
+    if (bottom < -40) {
+      // mjuk reset
+      worldX += 120;
+      bottom = 80;
+      vy = 0;
+    }
+  }
+
+  if (!falling && bottom <= 80) {
     bottom = 80;
     vy = 0;
     onGround = true;
   }
 
   player.style.bottom = bottom + "px";
-
-  // testa kollision
-  let blocked = false;
-  world.style.left = nextWorldX + "px";
-
-  const playerRect = player.getBoundingClientRect();
-
-  obstacles.forEach(ob => {
-    const rect = ob.getBoundingClientRect();
-    if (collides(playerRect, rect)) blocked = true;
-  });
-
-  if (!blocked) {
-    worldX = nextWorldX;
-  } else {
-    world.style.left = worldX + "px";
-  }
+  world.style.left = worldX + "px";
 
   requestAnimationFrame(loop);
 }
