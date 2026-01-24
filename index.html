@@ -204,14 +204,17 @@ jumpBtn.addEventListener("pointerdown", e => {
 });
 
 function loop() {
-  if (right) worldX -= speed;
-  if (left) worldX += speed;
+  let nextWorldX = worldX;
 
+  if (right) nextWorldX -= speed;
+  if (left) nextWorldX += speed;
+
+  // HOPP / GRAVITATION
   vy -= gravity;
   let bottom = parseFloat(player.style.bottom || 80);
   bottom += vy;
 
-  // kolla om vi är över en grop
+  // GROP-LOGIK (oförändrad)
   let falling = false;
   const playerX = player.getBoundingClientRect().left;
 
@@ -229,8 +232,7 @@ function loop() {
   if (falling) {
     bottom -= 6;
     if (bottom < -40) {
-      // mjuk reset
-      worldX += 120;
+      nextWorldX += 120; // reset före grop
       bottom = 80;
       vy = 0;
     }
@@ -242,13 +244,33 @@ function loop() {
     onGround = true;
   }
 
-  player.style.bottom = bottom + "px";
-  world.style.left = worldX + "px";
+  // TESTA KOLLISION MOT HINDER
+  world.style.left = nextWorldX + "px";
+  const playerRect = player.getBoundingClientRect();
+  let blocked = false;
 
+  document.querySelectorAll(".obstacle").forEach(ob => {
+    const r = ob.getBoundingClientRect();
+    if (
+      playerRect.right > r.left &&
+      playerRect.left < r.right &&
+      playerRect.bottom > r.top &&
+      playerRect.top < r.bottom
+    ) {
+      blocked = true;
+    }
+  });
+
+  // TILLÅT ELLER STOPPA RÖRELSE
+  if (!blocked) {
+    worldX = nextWorldX;
+  } else {
+    world.style.left = worldX + "px";
+  }
+
+  player.style.bottom = bottom + "px";
   requestAnimationFrame(loop);
 }
-
-loop();
 </script>
 
 </body>
