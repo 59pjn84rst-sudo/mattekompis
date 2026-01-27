@@ -135,7 +135,7 @@ button {
   position:relative;
 }
 
-/* rutlinjer bakom */
+/* rutlinjer bakom – JUSTERAD FET LINJE */
 .grid::before {
   content:"";
   position:absolute;
@@ -151,7 +151,7 @@ button {
       transparent 65px,
       transparent 126px,#000 126px,#000 128px,
       transparent 128px,
-      transparent 189px,#000 189px,#000 195px);
+      transparent 182px,#000 182px,#000 190px);
 }
 
 .cell {
@@ -286,10 +286,10 @@ function showMath(ob){
     grid.appendChild(d);
   });
 
-  // GRÖNT: endast entalssiffror
+  /* GRÖNT: endast entalssiffror */
   document.querySelectorAll(".ones").forEach(c=>c.classList.add("green-focus"));
 
-  // BLÅTT: tiotal efter entalssvar
+  /* BLÅTT: tiotal efter entalssvar */
   const inputs=document.querySelectorAll("#mathGrid input");
   inputs[2].addEventListener("input",()=>{
     document.querySelectorAll(".green-focus").forEach(c=>c.classList.remove("green-focus"));
