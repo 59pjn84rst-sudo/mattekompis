@@ -29,23 +29,22 @@ body { margin:0; font-family:system-ui; background:#60a5fa; overflow:hidden; }
   bottom:0;
   height:80px;
   width:4000px;
-  background:repeating-linear-gradient(
-    90deg,#22c55e,#22c55e 80px,#16a34a 80px,#16a34a 160px
-  );
+  background:#22c55e;
 }
-.pit {
-  position:absolute;
-  bottom:0;
-  width:70px;
-  height:80px;
-  background:#60a5fa;
-}
+
+/* ===== HINDER ===== */
 .obstacle {
   position:absolute;
   width:50px;
   height:40px;
   background:#7c3aed;
-  border-radius:8px;
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:white;
+  font-size:1.6rem;
+  font-weight:700;
 }
 
 /* ===== GUBBE ===== */
@@ -56,11 +55,43 @@ body { margin:0; font-family:system-ui; background:#60a5fa; overflow:hidden; }
   width:40px;
   height:64px;
 }
-.head{width:24px;height:24px;background:#fde68a;border-radius:50%;margin:auto}
-.hair{position:absolute;top:0;left:8px;width:24px;height:10px;background:#facc15}
-.body{width:40px;height:28px;background:#2563eb;border-radius:8px;margin-top:4px}
-.legs{display:flex;justify-content:space-between}
-.leg{width:16px;height:20px;background:#1e293b;border-radius:6px}
+.head {
+  width:24px;
+  height:24px;
+  background:#fde68a;
+  border-radius:50%;
+  margin:auto;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:14px;
+}
+.hair {
+  position:absolute;
+  top:0;
+  left:8px;
+  width:24px;
+  height:10px;
+  background:#facc15;
+  border-radius:8px 8px 0 0;
+}
+.body {
+  width:40px;
+  height:28px;
+  background:#2563eb;
+  border-radius:8px;
+  margin-top:4px;
+}
+.legs {
+  display:flex;
+  justify-content:space-between;
+}
+.leg {
+  width:16px;
+  height:20px;
+  background:#1e293b;
+  border-radius:6px;
+}
 
 /* ===== KONTROLLER ===== */
 #controls {
@@ -77,7 +108,6 @@ button {
   border:none;
   background:#1e3a8a;
   color:white;
-  touch-action:none;
 }
 
 /* ===== MATTE ===== */
@@ -132,9 +162,8 @@ button {
   z-index:1;
 }
 .tens { color:#2563eb; font-weight:600; }
-.ones { color:#16a34a; font-weight:700; }
+.ones { color:#16a34a; font-weight:700; background:#f1f5f9; }
 .op { font-weight:700; }
-.grey { background:#f1f5f9; }
 
 input {
   width:100%;
@@ -145,13 +174,13 @@ input {
   background:transparent;
 }
 
-/* pedagogisk guidning */
-.start-green {
-  box-shadow:0 0 0 3px rgba(22,163,74,.4);
+/* HIGHLIGHTS */
+.green-focus {
+  box-shadow:0 0 0 3px rgba(22,163,74,.45);
   border-radius:6px;
 }
-.focus-blue {
-  box-shadow:0 0 0 3px rgba(37,99,235,.4);
+.blue-focus {
+  box-shadow:0 0 0 3px rgba(37,99,235,.45);
   border-radius:6px;
 }
 </style>
@@ -163,19 +192,19 @@ input {
   <div id="world">
     <div class="ground"></div>
 
-    <div class="pit" style="left:700px"></div>
-    <div class="pit" style="left:1700px"></div>
-
-    <div class="obstacle" data-index="0" style="left:1000px; bottom:80px"></div>
-    <div class="obstacle" data-index="1" style="left:2000px; bottom:80px"></div>
-    <div class="obstacle" data-index="2" style="left:3000px; bottom:80px"></div>
+    <div class="obstacle" data-index="0" style="left:900px; bottom:80px">?</div>
+    <div class="obstacle" data-index="1" style="left:1800px; bottom:80px">?</div>
+    <div class="obstacle" data-index="2" style="left:2700px; bottom:80px">?</div>
   </div>
 
   <div id="player">
-    <div class="head"></div>
+    <div class="head">🙂</div>
     <div class="hair"></div>
     <div class="body"></div>
-    <div class="legs"><div class="leg"></div><div class="leg"></div></div>
+    <div class="legs">
+      <div class="leg"></div>
+      <div class="leg"></div>
+    </div>
   </div>
 </div>
 
@@ -195,7 +224,7 @@ input {
 </div>
 
 <script>
-/* ===== VECKANS TAL – ÄNDRA HÄR ===== */
+/* ===== VECKANS TAL ===== */
 const weeklyTasks = `
 39+15
 63+28
@@ -207,27 +236,21 @@ const weeklyTasks = `
 37+45
 `.trim().split("\n");
 
-/* ===== SPELVARIABLER ===== */
 let taskIndex = 0;
 let correctAnswer = 0;
 let paused = false;
 let currentObstacle = null;
 
-let worldX = 0, vy = 0, onGround = true;
+let worldX=0, vy=0, onGround=true;
 let left=false, right=false;
-const gravity = 0.6, speed = 3;
+const gravity=0.6, speed=3;
 
-const world = document.getElementById("world");
-const player = document.getElementById("player");
-
-/* ===== KONTROLLER ===== */
 leftBtn.onpointerdown=e=>{e.preventDefault();left=true};
 leftBtn.onpointerup=()=>left=false;
 rightBtn.onpointerdown=e=>{e.preventDefault();right=true};
 rightBtn.onpointerup=()=>right=false;
 jumpBtn.onpointerdown=e=>{e.preventDefault(); if(onGround){vy=11;onGround=false;}};
 
-/* ===== MATTE ===== */
 function showMath(ob){
   paused = true;
   currentObstacle = ob;
@@ -239,7 +262,7 @@ function showMath(ob){
   grid.innerHTML = "";
 
   const cells = [
-    "", "carry", "",
+    "", "", "",
     "", Math.floor(a/10), a%10,
     "+", Math.floor(b/10), b%10,
     "input", "input", "input"
@@ -248,28 +271,29 @@ function showMath(ob){
   cells.forEach((v,i)=>{
     const d=document.createElement("div");
     d.className="cell";
-    if(i%3===1) d.classList.add("tens");
-    if(i%3===2) d.classList.add("ones","grey");
+    if(i%3===1 && typeof v==="number") d.classList.add("tens");
+    if(i%3===2 && typeof v==="number") d.classList.add("ones");
     if(v==="+") d.classList.add("op");
 
-    if(v==="input"||v==="carry"){
+    if(v==="input"){
       const inp=document.createElement("input");
       inp.inputMode="numeric";
       inp.maxLength=1;
       d.appendChild(inp);
-    } else if(v!==""){
+    } else if(typeof v==="number"){
       d.textContent=v;
     }
     grid.appendChild(d);
   });
 
-  const onesCells=document.querySelectorAll(".ones");
-  onesCells.forEach(c=>c.classList.add("start-green"));
+  // GRÖNT: endast entalssiffror
+  document.querySelectorAll(".ones").forEach(c=>c.classList.add("green-focus"));
 
+  // BLÅTT: tiotal efter entalssvar
   const inputs=document.querySelectorAll("#mathGrid input");
   inputs[2].addEventListener("input",()=>{
-    onesCells.forEach(c=>c.classList.remove("start-green"));
-    document.querySelectorAll(".tens").forEach(c=>c.classList.add("focus-blue"));
+    document.querySelectorAll(".green-focus").forEach(c=>c.classList.remove("green-focus"));
+    document.querySelectorAll(".tens").forEach(c=>c.classList.add("blue-focus"));
   },{once:true});
 
   document.getElementById("mathOverlay").style.display="flex";
@@ -280,39 +304,37 @@ function checkAnswer(){
     .map(i=>i.value||"").join("");
   if(parseInt(val)===correctAnswer){
     currentObstacle.remove();
-    document.getElementById("mathOverlay").style.display="none";
-    paused=false;
     taskIndex++;
+    paused=false;
+    document.getElementById("mathOverlay").style.display="none";
   }
 }
 
-/* ===== SPELLOOP ===== */
 function loop(){
   if(!paused){
-    let nextWorldX = worldX;
-    if(right) nextWorldX -= speed;
-    if(left) nextWorldX += speed;
+    let nextWorldX=worldX;
+    if(right) nextWorldX-=speed;
+    if(left) nextWorldX+=speed;
 
-    vy -= gravity;
-    let bottom = parseFloat(player.style.bottom||80) + vy;
+    vy-=gravity;
+    let bottom=parseFloat(player.style.bottom||80)+vy;
     if(bottom<=80){bottom=80;vy=0;onGround=true;}
 
-    world.style.left = nextWorldX+"px";
-    const pr = player.getBoundingClientRect();
+    world.style.left=nextWorldX+"px";
+    const pr=player.getBoundingClientRect();
 
     document.querySelectorAll(".obstacle").forEach(ob=>{
-      const r = ob.getBoundingClientRect();
+      const r=ob.getBoundingClientRect();
       if(pr.right>r.left && pr.left<r.right){
         showMath(ob);
       }
     });
 
-    worldX = nextWorldX;
-    player.style.bottom = bottom+"px";
+    worldX=nextWorldX;
+    player.style.bottom=bottom+"px";
   }
   requestAnimationFrame(loop);
 }
-
 loop();
 </script>
 
