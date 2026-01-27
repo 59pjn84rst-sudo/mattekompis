@@ -6,134 +6,40 @@
 <title>Mattepromenaden</title>
 
 <style>
-* {
-  -webkit-user-select: none;
-  user-select: none;
-  -webkit-touch-callout: none;
-}
+* { user-select:none; -webkit-user-select:none; }
+body { margin:0; background:#60a5fa; font-family:system-ui; overflow:hidden; }
 
-body {
-  margin: 0;
-  font-family: system-ui, sans-serif;
-  background: #60a5fa;
-  overflow: hidden;
-}
+/* SPEL */
+#game { position:relative; width:100vw; height:60vh;
+  background:linear-gradient(#60a5fa,#86efac); overflow:hidden; }
+#world { position:absolute; bottom:0; left:0; width:3200px; height:100%; }
+.ground { position:absolute; bottom:0; width:3200px; height:80px; background:#22c55e; }
 
-/* ===== SPEL ===== */
-#game {
-  position: relative;
-  width: 100vw;
-  height: 60vh;
-  background: linear-gradient(#60a5fa, #86efac);
-  overflow: hidden;
-}
+.pit { position:absolute; bottom:0; width:70px; height:80px; background:#60a5fa; }
+.obstacle { position:absolute; width:50px; height:40px; background:#7c3aed; border-radius:8px; }
 
-#world {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  height: 100%;
-  width: 3200px;
-}
+/* GUBBE */
+#player { position:absolute; left:45%; bottom:80px; width:40px; height:64px; }
+.head { width:24px; height:24px; background:#fde68a; border-radius:50%; margin:auto; }
+.hair { position:absolute; top:0; left:8px; width:24px; height:10px; background:#facc15; }
+.body { width:40px; height:28px; background:#2563eb; border-radius:8px; margin-top:4px; }
+.legs { display:flex; justify-content:space-between; }
+.leg { width:16px; height:20px; background:#1e293b; border-radius:6px; }
 
-/* MARK */
-.ground {
-  position: absolute;
-  bottom: 0;
-  height: 80px;
-  width: 3200px;
-  background: repeating-linear-gradient(
-    90deg,
-    #22c55e,
-    #22c55e 80px,
-    #16a34a 80px,
-    #16a34a 160px
-  );
-}
+/* KONTROLLER */
+#controls { display:flex; justify-content:center; gap:30px; padding:12px; background:#0f172a; }
+button { font-size:1.8rem; padding:12px 18px; border-radius:14px; border:none;
+  background:#1e3a8a; color:white; }
 
-/* GROPAR */
-.pit {
-  position: absolute;
-  bottom: 0;
-  width: 70px;
-  height: 80px;
-  background: #60a5fa;
+/* MATTE */
+#mathOverlay {
+  position:fixed; inset:0; background:rgba(0,0,0,.6);
+  display:none; align-items:center; justify-content:center;
 }
-
-/* HINDER */
-.obstacle {
-  position: absolute;
-  width: 50px;
-  height: 40px;
-  background: #7c3aed;
-  border-radius: 8px;
+#mathBox {
+  background:white; padding:20px; border-radius:12px; text-align:center;
 }
-
-/* ===== GUBBE ===== */
-#player {
-  position: absolute;
-  left: 45%;
-  bottom: 80px;
-  width: 40px;
-  height: 64px;
-}
-
-.head {
-  width: 24px;
-  height: 24px;
-  background: #fde68a;
-  border-radius: 50%;
-  margin: 0 auto;
-}
-
-.hair {
-  position: absolute;
-  top: 0;
-  left: 8px;
-  width: 24px;
-  height: 10px;
-  background: #facc15;
-  border-radius: 8px 8px 0 0;
-}
-
-.body {
-  width: 40px;
-  height: 28px;
-  background: #2563eb;
-  border-radius: 8px;
-  margin-top: 4px;
-}
-
-.legs {
-  display: flex;
-  justify-content: space-between;
-}
-
-.leg {
-  width: 16px;
-  height: 20px;
-  background: #1e293b;
-  border-radius: 6px;
-}
-
-/* ===== KONTROLLER ===== */
-#controls {
-  display: flex;
-  justify-content: center;
-  gap: 30px;
-  padding: 12px;
-  background: #0f172a;
-}
-
-button {
-  font-size: 1.8rem;
-  padding: 12px 18px;
-  border-radius: 14px;
-  border: none;
-  background: #1e3a8a;
-  color: white;
-  touch-action: none;
-}
+#mathBox input { font-size:2rem; width:80px; text-align:center; }
 </style>
 </head>
 
@@ -143,24 +49,18 @@ button {
   <div id="world">
     <div class="ground"></div>
 
-    <!-- GROPAR -->
     <div class="pit" style="left:600px"></div>
     <div class="pit" style="left:1400px"></div>
 
-    <!-- HINDER -->
-    <div class="obstacle" style="left:900px; bottom:80px"></div>
-    <div class="obstacle" style="left:1800px; bottom:80px"></div>
+    <div class="obstacle" data-math style="left:900px; bottom:80px"></div>
+    <div class="obstacle" data-math style="left:1800px; bottom:80px"></div>
   </div>
 
-  <!-- GUBBE -->
   <div id="player">
     <div class="head"></div>
     <div class="hair"></div>
     <div class="body"></div>
-    <div class="legs">
-      <div class="leg"></div>
-      <div class="leg"></div>
-    </div>
+    <div class="legs"><div class="leg"></div><div class="leg"></div></div>
   </div>
 </div>
 
@@ -170,106 +70,77 @@ button {
   <button id="rightBtn">➡️</button>
 </div>
 
+<!-- MATTE -->
+<div id="mathOverlay">
+  <div id="mathBox">
+    <div id="mathText" style="font-size:2rem; margin-bottom:10px"></div>
+    <input id="answer">
+    <div><button onclick="checkAnswer()">Klar</button></div>
+  </div>
+</div>
+
 <script>
-let worldX = 0;
-let vy = 0;
-let onGround = true;
-let left = false;
-let right = false;
-const gravity = 0.6;
-const speed = 3;
+let worldX=0, vy=0, onGround=true, left=false, right=false;
+let paused=false, currentObstacle=null, correctAnswer=0;
+const gravity=0.6, speed=3;
 
-const world = document.getElementById("world");
-const player = document.getElementById("player");
-const pits = document.querySelectorAll(".pit");
+const world=document.getElementById("world");
+const player=document.getElementById("player");
+const pits=document.querySelectorAll(".pit");
 
-const leftBtn = document.getElementById("leftBtn");
-const rightBtn = document.getElementById("rightBtn");
-const jumpBtn = document.getElementById("jumpBtn");
+leftBtn.onpointerdown=e=>{e.preventDefault();left=true};
+leftBtn.onpointerup=()=>left=false;
+rightBtn.onpointerdown=e=>{e.preventDefault();right=true};
+rightBtn.onpointerup=()=>right=false;
+jumpBtn.onpointerdown=e=>{e.preventDefault(); if(onGround){vy=11;onGround=false;}};
 
-leftBtn.addEventListener("pointerdown", e => { e.preventDefault(); left = true; });
-leftBtn.addEventListener("pointerup", () => left = false);
-leftBtn.addEventListener("pointerleave", () => left = false);
+function showMath(ob){
+  paused=true;
+  currentObstacle=ob;
+  const a=Math.floor(Math.random()*30)+10;
+  const b=Math.floor(Math.random()*30)+10;
+  correctAnswer=a+b;
+  document.getElementById("mathText").innerText=`${a} + ${b} = ?`;
+  document.getElementById("answer").value="";
+  document.getElementById("mathOverlay").style.display="flex";
+}
 
-rightBtn.addEventListener("pointerdown", e => { e.preventDefault(); right = true; });
-rightBtn.addEventListener("pointerup", () => right = false);
-rightBtn.addEventListener("pointerleave", () => right = false);
-
-jumpBtn.addEventListener("pointerdown", e => {
-  e.preventDefault();
-  if (onGround) {
-    vy = 11;
-    onGround = false;
+function checkAnswer(){
+  const val=parseInt(document.getElementById("answer").value);
+  if(val===correctAnswer){
+    currentObstacle.remove();
+    paused=false;
+    document.getElementById("mathOverlay").style.display="none";
   }
-});
+}
 
-function loop() {
-  let nextWorldX = worldX;
+function loop(){
+  if(!paused){
+    let nextWorldX=worldX;
+    if(right) nextWorldX-=speed;
+    if(left) nextWorldX+=speed;
 
-  if (right) nextWorldX -= speed;
-  if (left) nextWorldX += speed;
+    vy-=gravity;
+    let bottom=parseFloat(player.style.bottom||80)+vy;
 
-  vy -= gravity;
-  let bottom = parseFloat(player.style.bottom || 80);
-  bottom += vy;
+    if(bottom<=80){bottom=80;vy=0;onGround=true;}
 
-  let falling = false;
-  const playerX = player.getBoundingClientRect().left;
+    world.style.left=nextWorldX+"px";
+    const playerRect=player.getBoundingClientRect();
 
-  pits.forEach(pit => {
-    const rect = pit.getBoundingClientRect();
-    if (
-      playerX > rect.left &&
-      playerX < rect.right &&
-      bottom <= 80
-    ) {
-      falling = true;
-    }
-  });
+    document.querySelectorAll(".obstacle").forEach(ob=>{
+      const r=ob.getBoundingClientRect();
+      if(playerRect.right>r.left && playerRect.left<r.right){
+        showMath(ob);
+      }
+    });
 
-  if (falling) {
-    bottom -= 6;
-    if (bottom < -40) {
-      nextWorldX += 120;
-      bottom = 80;
-      vy = 0;
-    }
+    worldX=nextWorldX;
+    player.style.bottom=bottom+"px";
   }
-
-  if (!falling && bottom <= 80) {
-    bottom = 80;
-    vy = 0;
-    onGround = true;
-  }
-
-  world.style.left = nextWorldX + "px";
-
-  const playerRect = player.getBoundingClientRect();
-  let blocked = false;
-
-  document.querySelectorAll(".obstacle").forEach(ob => {
-    const r = ob.getBoundingClientRect();
-    if (
-      playerRect.right > r.left &&
-      playerRect.left < r.right &&
-      playerRect.bottom > r.top &&
-      playerRect.top < r.bottom
-    ) {
-      blocked = true;
-    }
-  });
-
-  if (!blocked) {
-    worldX = nextWorldX;
-  } else {
-    world.style.left = worldX + "px";
-  }
-
-  player.style.bottom = bottom + "px";
   requestAnimationFrame(loop);
 }
 
-// STARTA SPELET
 loop();
 </script>
 
