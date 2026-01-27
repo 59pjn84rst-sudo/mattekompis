@@ -9,37 +9,88 @@
 * { user-select:none; -webkit-user-select:none; }
 body { margin:0; background:#60a5fa; font-family:system-ui; overflow:hidden; }
 
-/* SPEL */
+/* ===== SPEL ===== */
 #game { position:relative; width:100vw; height:60vh;
   background:linear-gradient(#60a5fa,#86efac); overflow:hidden; }
 #world { position:absolute; bottom:0; left:0; width:3200px; height:100%; }
 .ground { position:absolute; bottom:0; width:3200px; height:80px; background:#22c55e; }
-
 .pit { position:absolute; bottom:0; width:70px; height:80px; background:#60a5fa; }
 .obstacle { position:absolute; width:50px; height:40px; background:#7c3aed; border-radius:8px; }
 
-/* GUBBE */
+/* ===== GUBBE ===== */
 #player { position:absolute; left:45%; bottom:80px; width:40px; height:64px; }
-.head { width:24px; height:24px; background:#fde68a; border-radius:50%; margin:auto; }
-.hair { position:absolute; top:0; left:8px; width:24px; height:10px; background:#facc15; }
-.body { width:40px; height:28px; background:#2563eb; border-radius:8px; margin-top:4px; }
-.legs { display:flex; justify-content:space-between; }
-.leg { width:16px; height:20px; background:#1e293b; border-radius:6px; }
+.head{width:24px;height:24px;background:#fde68a;border-radius:50%;margin:auto}
+.hair{position:absolute;top:0;left:8px;width:24px;height:10px;background:#facc15}
+.body{width:40px;height:28px;background:#2563eb;border-radius:8px;margin-top:4px}
+.legs{display:flex;justify-content:space-between}
+.leg{width:16px;height:20px;background:#1e293b;border-radius:6px}
 
-/* KONTROLLER */
+/* ===== KONTROLLER ===== */
 #controls { display:flex; justify-content:center; gap:30px; padding:12px; background:#0f172a; }
 button { font-size:1.8rem; padding:12px 18px; border-radius:14px; border:none;
   background:#1e3a8a; color:white; }
 
-/* MATTE */
+/* ===== MATTE ===== */
 #mathOverlay {
-  position:fixed; inset:0; background:rgba(0,0,0,.6);
+  position:fixed; inset:0;
+  background:rgba(0,0,0,.6);
   display:none; align-items:center; justify-content:center;
 }
-#mathBox {
-  background:white; padding:20px; border-radius:12px; text-align:center;
+
+.gridWrapper {
+  background:white;
+  padding:16px;
+  border:3px solid #0f172a;
 }
-#mathBox input { font-size:2rem; width:80px; text-align:center; }
+
+.grid {
+  width:168px;
+  height:252px;
+  display:grid;
+  grid-template-columns:56px 56px 56px;
+  grid-template-rows:63px 63px 63px 63px;
+  position:relative;
+}
+
+/* rutlinjer */
+.grid::before {
+  content:"";
+  position:absolute; inset:0;
+  background:
+    linear-gradient(to right,
+      transparent 0,transparent 56px,#000 56px,#000 58px,
+      transparent 58px,transparent 112px,#000 112px,#000 114px,
+      transparent 114px),
+    linear-gradient(to bottom,
+      transparent 0,transparent 63px,#000 63px,#000 65px,
+      transparent 65px,
+      transparent 126px,#000 126px,#000 128px,
+      transparent 128px,
+      transparent 189px,#000 189px,#000 195px);
+}
+
+.cell {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:2.2rem;
+}
+
+.tens { color:#2563eb; font-weight:600; }
+.ones { color:#16a34a; font-weight:600; }
+.op { font-weight:700; }
+.grey { background:#f1f5f9; }
+
+input {
+  width:100%;
+  height:100%;
+  border:none;
+  font-size:2rem;
+  text-align:center;
+  background:transparent;
+}
+
+/* ====== */
 </style>
 </head>
 
@@ -72,21 +123,21 @@ button { font-size:1.8rem; padding:12px 18px; border-radius:14px; border:none;
 
 <!-- MATTE -->
 <div id="mathOverlay">
-  <div id="mathBox">
-    <div id="mathText" style="font-size:2rem; margin-bottom:10px"></div>
-    <input id="answer">
-    <div><button onclick="checkAnswer()">Klar</button></div>
+  <div class="gridWrapper">
+    <div class="grid" id="mathGrid"></div>
+    <div style="text-align:center;margin-top:10px">
+      <button onclick="checkAnswer()">Klar</button>
+    </div>
   </div>
 </div>
 
 <script>
-let worldX=0, vy=0, onGround=true, left=false, right=false;
-let paused=false, currentObstacle=null, correctAnswer=0;
-const gravity=0.6, speed=3;
+let worldX=0,vy=0,onGround=true,left=false,right=false;
+let paused=false,currentObstacle=null,correctAnswer=0;
 
+const gravity=0.6,speed=3;
 const world=document.getElementById("world");
 const player=document.getElementById("player");
-const pits=document.querySelectorAll(".pit");
 
 leftBtn.onpointerdown=e=>{e.preventDefault();left=true};
 leftBtn.onpointerup=()=>left=false;
@@ -97,17 +148,44 @@ jumpBtn.onpointerdown=e=>{e.preventDefault(); if(onGround){vy=11;onGround=false;
 function showMath(ob){
   paused=true;
   currentObstacle=ob;
-  const a=Math.floor(Math.random()*30)+10;
+
+  const a=Math.floor(Math.random()*40)+10;
   const b=Math.floor(Math.random()*30)+10;
   correctAnswer=a+b;
-  document.getElementById("mathText").innerText=`${a} + ${b} = ?`;
-  document.getElementById("answer").value="";
+
+  const grid=document.getElementById("mathGrid");
+  grid.innerHTML="";
+
+  const rows=[
+    ["","",""],
+    ["",Math.floor(a/10),a%10],
+    ["+",Math.floor(b/10),b%10],
+    ["","",""]
+  ];
+
+  rows.flat().forEach((v,i)=>{
+    const d=document.createElement("div");
+    d.className="cell";
+    if(i%3===1) d.classList.add("tens");
+    if(i%3===2) d.classList.add("ones","grey");
+    if(v==="+" ) d.classList.add("op");
+
+    if(i>=9){
+      const inp=document.createElement("input");
+      d.appendChild(inp);
+    } else if(v!=="") {
+      d.textContent=v;
+    }
+    grid.appendChild(d);
+  });
+
   document.getElementById("mathOverlay").style.display="flex";
 }
 
 function checkAnswer(){
-  const val=parseInt(document.getElementById("answer").value);
-  if(val===correctAnswer){
+  const vals=[...document.querySelectorAll("#mathGrid input")]
+    .map(i=>i.value||"").join("");
+  if(parseInt(vals)===correctAnswer){
     currentObstacle.remove();
     paused=false;
     document.getElementById("mathOverlay").style.display="none";
@@ -122,15 +200,14 @@ function loop(){
 
     vy-=gravity;
     let bottom=parseFloat(player.style.bottom||80)+vy;
-
     if(bottom<=80){bottom=80;vy=0;onGround=true;}
 
     world.style.left=nextWorldX+"px";
-    const playerRect=player.getBoundingClientRect();
+    const pr=player.getBoundingClientRect();
 
     document.querySelectorAll(".obstacle").forEach(ob=>{
       const r=ob.getBoundingClientRect();
-      if(playerRect.right>r.left && playerRect.left<r.right){
+      if(pr.right>r.left && pr.left<r.right){
         showMath(ob);
       }
     });
