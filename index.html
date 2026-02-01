@@ -6,8 +6,18 @@
 <title>Mattepromenaden</title>
 
 <style>
-* { box-sizing:border-box; -webkit-touch-callout:none; }
-body { margin:0; font-family:system-ui,sans-serif; background:#1e3a8a; overflow:hidden; }
+/* ===== RESET ===== */
+*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
+  -webkit-touch-callout:none;
+}
+body{
+  margin:0;
+  font-family:system-ui,sans-serif;
+  background:#1e3a8a;
+  overflow:hidden;
+}
 
 /* ===== SPEL ===== */
 #game{
@@ -16,77 +26,147 @@ body { margin:0; font-family:system-ui,sans-serif; background:#1e3a8a; overflow:
   background:linear-gradient(#60a5fa,#86efac);
   overflow:hidden;
 }
-#world{ position:absolute; bottom:0; left:0; width:4200px; height:100%; }
-.ground{ position:absolute; bottom:0; width:4200px; height:80px; background:#22c55e; }
+#world{
+  position:absolute;
+  bottom:0;
+  left:0;
+  width:4200px;
+  height:100%;
+}
+.ground{
+  position:absolute;
+  bottom:0;
+  width:4200px;
+  height:80px;
+  background:#22c55e;
+}
 
 /* ===== MILJÖ ===== */
-.sun{ position:absolute; top:20px; right:40px; width:80px; height:80px; background:#fde047; border-radius:50%; }
-.tree{ position:absolute; bottom:80px; width:40px; height:80px; }
-.tree::before{ content:""; position:absolute; bottom:0; left:14px; width:12px; height:40px; background:#92400e; }
-.tree::after{ content:""; position:absolute; bottom:30px; left:-10px; width:60px; height:50px; background:#16a34a; border-radius:50%; }
-.flower{ position:absolute; bottom:80px; width:16px; height:16px; background:#f472b6; border-radius:50%; }
-
-/* ===== HINDER / PLATTFORMAR ===== */
-@keyframes wiggle{0%{transform:translateX(0)}50%{transform:translateX(10px)}100%{transform:translateX(0)}}
-.hedgehog{
-  position:absolute; bottom:80px; width:36px; height:22px;
-  background:#92400e; border-radius:12px;
-  animation:wiggle 3s ease-in-out infinite;
+.sun{
+  position:absolute;
+  top:20px; right:40px;
+  width:80px; height:80px;
+  background:#fde047;
+  border-radius:50%;
 }
+
+/* ===== BERG (PLATTFORM) ===== */
 .hill{
-  position:absolute; bottom:80px; width:160px; height:70px;
-  background:#4b5563; border-radius:80px 80px 0 0;
+  position:absolute;
+  bottom:80px;
+  width:160px;
+  height:70px;
+  background:#4b5563;
+  border-radius:80px 80px 0 0;
+}
+
+/* ===== IGELKOTT ===== */
+.hedgehog{
+  position:absolute;
+  bottom:80px;
+  width:38px;
+  height:22px;
+  background:#92400e;
+  border-radius:12px;
+}
+.hedgehog::before{
+  content:"";
+  position:absolute;
+  top:-10px;
+  left:-2px;
+  width:42px;
+  height:14px;
+  background:#78350f;
+  clip-path:polygon(
+    0% 100%,10% 0%,20% 100%,30% 0%,40% 100%,
+    50% 0%,60% 100%,70% 0%,80% 100%,90% 0%,100% 100%
+  );
 }
 
 /* ===== GUBBE ===== */
-#player{ position:absolute; left:45%; bottom:80px; width:40px; }
+#player{
+  position:absolute;
+  left:45%;
+  bottom:80px;
+  width:40px;
+}
 .head{
-  width:24px; height:24px; background:#fde68a;
-  border-radius:50%; position:relative;
-  display:flex; align-items:center; justify-content:center;
+  width:24px; height:24px;
+  background:#fde68a;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:14px;
 }
-/* keps */
-.cap{
-  position:absolute; top:-6px; left:-4px;
-  width:32px; height:12px;
-  background:#dc2626;
-  border-radius:6px 6px 2px 2px;
+.body{
+  width:20px;             /* hälften så bred */
+  height:28px;
+  background:#2563eb;
+  border-radius:6px;
+  margin:4px auto 0;
+  position:relative;
 }
-.body{ width:40px; height:28px; background:#2563eb; border-radius:8px; margin-top:4px; }
-.legs{ display:flex; justify-content:space-between; }
+.arm{
+  position:absolute;
+  top:6px;
+  width:10px;
+  height:4px;
+  background:#fde68a;
+}
+.arm.left{ left:-10px; }
+.arm.right{ right:-10px; }
+
+.legs{
+  display:flex;
+  justify-content:space-between;
+  width:30px;
+  margin:0 auto;
+}
 .leg{
-  width:16px; height:20px; background:#1e293b;
+  width:12px;
+  height:20px;
+  background:#1e293b;
   border-radius:6px;
 }
-
-/* ben-animation */
-@keyframes walk {
-  0%{transform:rotate(10deg)}
-  50%{transform:rotate(-10deg)}
-  100%{transform:rotate(10deg)}
-}
 .walking .leg{
-  animation:walk .3s infinite alternate;
+  animation:walk .25s alternate infinite;
+}
+@keyframes walk{
+  from{transform:rotate(10deg)}
+  to{transform:rotate(-10deg)}
 }
 
 /* ===== KONTROLLER ===== */
-#controls{ display:flex; justify-content:center; gap:30px; padding:12px; background:#0f172a; }
+#controls{
+  display:flex;
+  justify-content:center;
+  gap:30px;
+  padding:12px;
+  background:#0f172a;
+}
 button{
-  font-size:1.8rem; padding:12px 18px; border-radius:14px;
-  border:none; background:#1e3a8a; color:white;
-  touch-action:none;
+  font-size:1.8rem;
+  padding:12px 18px;
+  border-radius:14px;
+  border:none;
+  background:#1e3a8a;
+  color:white;
+  user-select:none;
 }
 
 /* ===== MATTE ===== */
 #mathOverlay{
-  position:fixed; inset:0;
+  position:fixed;
+  inset:0;
   background:rgba(0,0,0,.6);
   display:none;
-  align-items:center; justify-content:center;
-  pointer-events:auto;
+  align-items:center;
+  justify-content:center;
 }
 .gridWrapper{
-  background:white; padding:16px;
+  background:white;
+  padding:16px;
   border:3px solid #0f172a;
 }
 .grid{
@@ -96,26 +176,42 @@ button{
 }
 .cell{
   border:2px solid black;
-  display:flex; align-items:center; justify-content:center;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   font-size:2rem;
 }
 .row3{ border-bottom:6px solid black !important; }
+
 .ones{ color:#16a34a; font-weight:700; }
-.tens{ color:#2563eb; }
+.tens{ color:#2563eb; font-weight:600; }
+
 input{
-  width:100%; height:100%;
-  border:none; font-size:2rem; text-align:center;
+  width:100%;
+  height:100%;
+  border:none;
+  font-size:2rem;
+  text-align:center;
+  background:transparent;
 }
 
 /* ===== FYRVERKERI ===== */
-.firework{ position:fixed; left:50%; top:40%; pointer-events:none; z-index:9999; }
+.firework{
+  position:fixed;
+  left:50%; top:40%;
+  pointer-events:none;
+}
 .spark{
-  position:absolute; width:8px; height:8px; border-radius:50%;
-  animation:explode 900ms ease-out forwards;
+  position:absolute;
+  width:8px; height:8px;
+  border-radius:50%;
+  animation:explode .9s forwards;
 }
 @keyframes explode{
-  from{transform:translate(0,0);opacity:1}
-  to{transform:translate(var(--x),var(--y));opacity:0}
+  to{
+    transform:translate(var(--x),var(--y));
+    opacity:0;
+  }
 }
 </style>
 </head>
@@ -127,20 +223,18 @@ input{
     <div class="ground"></div>
     <div class="sun"></div>
 
-    <div class="tree" style="left:400px"></div>
-    <div class="tree" style="left:1600px"></div>
-
-    <div class="hill platform" style="left:800px"></div>
+    <div class="hill platform" style="left:700px"></div>
     <div class="hill platform" style="left:2000px"></div>
 
     <div class="hedgehog obstacle" style="left:1200px"></div>
   </div>
 
   <div id="player">
-    <div class="head">
-      🙂<div class="cap"></div>
+    <div class="head">🙂</div>
+    <div class="body">
+      <div class="arm left"></div>
+      <div class="arm right"></div>
     </div>
-    <div class="body"></div>
     <div class="legs">
       <div class="leg"></div><div class="leg"></div>
     </div>
@@ -158,7 +252,6 @@ input{
     <div class="grid" id="grid"></div>
     <div style="text-align:center;margin-top:10px">
       <button onclick="check()">Klar</button>
-      <button onclick="closeMath()">Tillbaka</button>
     </div>
   </div>
 </div>
@@ -169,32 +262,19 @@ input{
 
 <script>
 /* ===== MATTE ===== */
-const rawA4 = `39+15\n63+28\n58+34`;
-const tasks = rawA4.split("\n");
+const tasks=["39+15","63+28"];
 let taskIndex=0, correct=0, paused=false;
 
-/* ===== LJUD ===== */
-let audioStarted=false;
-function startAudio(){
-  if(!audioStarted){
-    bgMusic.volume=0.3;
-    bgMusic.play().catch(()=>{});
-    audioStarted=true;
-  }
-}
-
 /* ===== SPEL ===== */
-let worldX=0, vy=0, onGround=true;
-let left=false, right=false;
-const speed=3, gravity=0.6;
+let worldX=0,vy=0,onGround=true,left=false,right=false;
+const speed=3,gravity=0.6;
 
-leftBtn.onpointerdown=()=>{left=true;player.classList.add("walking");startAudio();};
+leftBtn.onpointerdown=()=>{left=true;player.classList.add("walking");};
 leftBtn.onpointerup=()=>{left=false;player.classList.remove("walking");};
-rightBtn.onpointerdown=()=>{right=true;player.classList.add("walking");startAudio();};
+rightBtn.onpointerdown=()=>{right=true;player.classList.add("walking");};
 rightBtn.onpointerup=()=>{right=false;player.classList.remove("walking");};
 
 jumpBtn.onpointerdown=()=>{
-  startAudio();
   if(onGround){
     jumpSound.play().catch(()=>{});
     vy=11; onGround=false;
@@ -202,18 +282,33 @@ jumpBtn.onpointerdown=()=>{
 };
 
 function showMath(){
-  paused=true; grid.innerHTML="";
+  paused=true;
+  grid.innerHTML="";
   const [a,b]=tasks[taskIndex].split("+").map(Number);
   correct=a+b;
-
   const aS=String(a).padStart(2,"0");
   const bS=String(b).padStart(2,"0");
 
-  const cells=["","", "", "",aS[0],aS[1],"+",bS[0],bS[1],"i","i","i"];
-  cells.forEach(v=>{
-    const c=document.createElement("div"); c.className="cell";
-    if(v==="i"){ const i=document.createElement("input"); c.appendChild(i);}
-    else c.textContent=v;
+  const cells=[
+    "i","i","i",
+    "",aS[0],aS[1],
+    "+",bS[0],bS[1],
+    "i","i","i"
+  ];
+
+  cells.forEach((v,i)=>{
+    const c=document.createElement("div");
+    c.className="cell";
+    if(i>=6&&i<=8)c.classList.add("row3");
+    if(v==="i"){
+      const inp=document.createElement("input");
+      inp.inputMode="numeric";
+      c.appendChild(inp);
+    }else{
+      c.textContent=v;
+      if(i%3===2)c.classList.add("ones");
+      if(i%3===1)c.classList.add("tens");
+    }
     grid.appendChild(c);
   });
 
@@ -221,7 +316,8 @@ function showMath(){
 }
 
 function check(){
-  const ans=[...grid.querySelectorAll("input")].map(i=>i.value||"").join("");
+  const ans=[...grid.querySelectorAll(".cell")].slice(9,12)
+    .map(c=>c.querySelector("input").value||"").join("");
   if(parseInt(ans)===correct){
     successSound.play().catch(()=>{});
     firework();
@@ -230,13 +326,14 @@ function check(){
     taskIndex++;
   }
 }
-function closeMath(){ mathOverlay.style.display="none"; paused=false; }
 
 function firework(){
-  const fw=document.createElement("div"); fw.className="firework";
+  const fw=document.createElement("div");
+  fw.className="firework";
   document.body.appendChild(fw);
-  for(let i=0;i<12;i++){
-    const s=document.createElement("div"); s.className="spark";
+  for(let i=0;i<10;i++){
+    const s=document.createElement("div");
+    s.className="spark";
     s.style.background=["#22c55e","#2563eb","#facc15"][i%3];
     s.style.setProperty("--x",(Math.random()*120-60)+"px");
     s.style.setProperty("--y",(Math.random()*-120)+"px");
@@ -248,13 +345,13 @@ function firework(){
 function loop(){
   if(!paused){
     let next=worldX;
-    if(right) next-=speed;
-    if(left) next+=speed;
+    if(right)next-=speed;
+    if(left)next+=speed;
 
     vy-=gravity;
     let bottom=parseFloat(player.style.bottom||80)+vy;
-
     onGround=false;
+
     document.querySelectorAll(".platform").forEach(p=>{
       const pr=player.getBoundingClientRect();
       const r=p.getBoundingClientRect();
@@ -272,7 +369,10 @@ function loop(){
 
     document.querySelectorAll(".obstacle").forEach(o=>{
       const pr=player.getBoundingClientRect(), r=o.getBoundingClientRect();
-      if(pr.right>r.left && pr.left<r.right){ showMath(); o.remove(); }
+      if(pr.right>r.left&&pr.left<r.right){
+        showMath();
+        o.remove();
+      }
     });
   }
   requestAnimationFrame(loop);
