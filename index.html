@@ -6,48 +6,44 @@
 <title>Mattepromenaden</title>
 
 <style>
-/* ================= GLOBALT ================= */
-* {
-  box-sizing: border-box;
-  -webkit-touch-callout: none;
-}
+/* ===== GLOBALT ===== */
+* { box-sizing:border-box; -webkit-touch-callout:none; }
 body {
-  margin: 0;
-  font-family: system-ui, sans-serif;
-  background: #1e3a8a;
-  overflow: hidden;
+  margin:0;
+  font-family:system-ui,sans-serif;
+  background:#1e3a8a;
+  overflow:hidden;
 }
 
-/* ================= SPEL ================= */
+/* ===== SPEL ===== */
 #game {
-  position: relative;
-  height: 60vh;
-  background: linear-gradient(#60a5fa, #86efac);
-  overflow: hidden;
-  animation: dayCycle 20s linear infinite;
+  position:relative;
+  height:60vh;
+  background:linear-gradient(#60a5fa,#86efac);
+  overflow:hidden;
+  animation:dayCycle 20s linear infinite;
 }
 @keyframes dayCycle {
-  0% { filter: brightness(1); }
-  50% { filter: brightness(0.95); }
-  100% { filter: brightness(1); }
+  0%{filter:brightness(1)}
+  50%{filter:brightness(.95)}
+  100%{filter:brightness(1)}
 }
-
 #world {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 3800px;
-  height: 100%;
+  position:absolute;
+  bottom:0;
+  left:0;
+  width:4000px;
+  height:100%;
 }
 .ground {
-  position: absolute;
-  bottom: 0;
-  width: 3800px;
-  height: 80px;
-  background: #22c55e;
+  position:absolute;
+  bottom:0;
+  width:4000px;
+  height:80px;
+  background:#22c55e;
 }
 
-/* ================= MILJÖ ================= */
+/* ===== MILJÖ ===== */
 .sun {
   position:absolute;
   top:20px;
@@ -58,7 +54,6 @@ body {
   border-radius:50%;
   box-shadow:0 0 20px rgba(253,224,71,.6);
 }
-
 .tree {
   position:absolute;
   bottom:80px;
@@ -84,7 +79,6 @@ body {
   background:#16a34a;
   border-radius:50%;
 }
-
 .flower {
   position:absolute;
   bottom:80px;
@@ -103,13 +97,12 @@ body {
   background:#15803d;
 }
 
-/* ================= HINDER ================= */
+/* ===== HINDER ===== */
 @keyframes wiggle {
   0%{transform:translateX(0)}
   50%{transform:translateX(10px)}
   100%{transform:translateX(0)}
 }
-
 .hedgehog {
   position:absolute;
   bottom:80px;
@@ -132,7 +125,6 @@ body {
     50% 0%,60% 100%,70% 0%,80% 100%,90% 0%,100% 100%
   );
 }
-
 .hill {
   position:absolute;
   bottom:80px;
@@ -142,7 +134,7 @@ body {
   border-radius:70px 70px 0 0;
 }
 
-/* ================= GUBBE ================= */
+/* ===== GUBBE ===== */
 #player {
   position:absolute;
   left:45%;
@@ -176,7 +168,7 @@ body {
   border-radius:6px;
 }
 
-/* ================= KONTROLLER ================= */
+/* ===== KONTROLLER ===== */
 #controls {
   display:flex;
   justify-content:center;
@@ -197,7 +189,7 @@ button {
   touch-action:none;
 }
 
-/* ================= MATTE ================= */
+/* ===== MATTE ===== */
 #mathOverlay {
   position:fixed;
   inset:0;
@@ -225,7 +217,6 @@ button {
   background:white;
 }
 .row3 { border-bottom:6px solid black !important; }
-
 .ones { color:#16a34a; font-weight:700; background:#f1f5f9; }
 .tens { color:#2563eb; font-weight:600; }
 .op { font-weight:700; }
@@ -245,7 +236,27 @@ input {
 .green-focus { box-shadow:inset 0 0 0 4px rgba(22,163,74,.4); }
 .blue-focus  { box-shadow:inset 0 0 0 4px rgba(37,99,235,.4); }
 
-/* ================= MÅL ================= */
+/* ===== FYRVERKERI ===== */
+.firework {
+  position:fixed;
+  left:50%;
+  top:40%;
+  pointer-events:none;
+  z-index:9999;
+}
+.spark {
+  position:absolute;
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  animation:explode 900ms ease-out forwards;
+}
+@keyframes explode {
+  from { transform:translate(0,0) scale(1); opacity:1; }
+  to { transform:translate(var(--x),var(--y)) scale(.3); opacity:0; }
+}
+
+/* ===== MÅL ===== */
 #finish {
   position:fixed;
   inset:0;
@@ -265,7 +276,6 @@ input {
 <div id="game">
   <div id="world">
     <div class="ground"></div>
-
     <div class="sun"></div>
 
     <div class="tree" style="left:400px"></div>
@@ -275,11 +285,10 @@ input {
     <div class="flower" style="left:360px"></div>
 
     <div class="hill" style="left:700px"></div>
-    <div class="hill" style="left:2100px"></div>
+    <div class="hill" style="left:2200px"></div>
 
     <div class="hedgehog obstacle" style="left:1200px"></div>
     <div class="hedgehog obstacle" style="left:2600px"></div>
-
   </div>
 
   <div id="player">
@@ -302,19 +311,18 @@ input {
     <div class="grid" id="grid"></div>
     <div style="text-align:center;margin-top:10px">
       <button onclick="check()">Klar</button>
+      <button onclick="closeMath()" style="margin-left:10px;background:#475569">Tillbaka</button>
     </div>
   </div>
 </div>
 
-<div id="finish">
-  🎉 Bra jobbat!<br>Du klarade hela banan 👏
-</div>
+<div id="finish">🎉 Bra jobbat!<br>Du är klar! 👏</div>
 
 <audio id="bgMusic" src="audio/background.mp3" loop></audio>
 <audio id="successSound" src="audio/applause.mp3"></audio>
 
 <script>
-/* ================= UPPGIFTER ================= */
+/* ===== UPPGIFTER ===== */
 const tasks = `
 39+15
 42-18
@@ -322,24 +330,40 @@ const tasks = `
 58+34
 `.trim().split("\n");
 
-let taskIndex = 0;
-let correct = 0;
-let paused = false;
+let taskIndex=0, correct=0, paused=false;
 
-/* ================= LJUD ================= */
-let audioStarted = false;
-document.addEventListener("pointerdown", () => {
-  if (!audioStarted) {
-    bgMusic.volume = 0.3;
+/* ===== LJUDSTART ===== */
+let audioStarted=false;
+document.addEventListener("pointerdown",()=>{
+  if(!audioStarted){
+    bgMusic.volume=0.3;
     bgMusic.play().catch(()=>{});
-    audioStarted = true;
+    audioStarted=true;
   }
-}, { once:true });
+},{once:true});
 
-/* ================= SPEL ================= */
-let worldX=0, vy=0, onGround=true;
-let left=false, right=false;
-const speed=3, gravity=0.6;
+/* ===== FYRVERKERI ===== */
+function firework(){
+  const fw=document.createElement("div");
+  fw.className="firework";
+  document.body.appendChild(fw);
+  for(let i=0;i<14;i++){
+    const s=document.createElement("div");
+    s.className="spark";
+    s.style.background=["#22c55e","#2563eb","#facc15","#f472b6","#a855f7"]
+      [Math.floor(Math.random()*5)];
+    const a=Math.random()*Math.PI*2;
+    const d=60+Math.random()*40;
+    s.style.setProperty("--x",Math.cos(a)*d+"px");
+    s.style.setProperty("--y",Math.sin(a)*d+"px");
+    fw.appendChild(s);
+  }
+  setTimeout(()=>fw.remove(),1000);
+}
+
+/* ===== SPEL ===== */
+let worldX=0,vy=0,onGround=true,left=false,right=false;
+const speed=3,gravity=0.6;
 
 leftBtn.onpointerdown=e=>{e.preventDefault();left=true};
 leftBtn.onpointerup=()=>left=false;
@@ -351,16 +375,15 @@ jumpBtn.onpointerdown=e=>{
 };
 
 function showMath(){
-  paused = true;
-  bgMusic.volume = 0.1;
-  grid.innerHTML = "";
+  paused=true;
+  bgMusic.volume=0.1;
+  grid.innerHTML="";
+  const t=tasks[taskIndex];
+  const op=t.includes("-")?"-":"+";
+  const [a,b]=t.split(op).map(Number);
+  correct=op==="+"?a+b:a-b;
 
-  const t = tasks[taskIndex];
-  const op = t.includes("-") ? "-" : "+";
-  const [a,b] = t.split(op).map(Number);
-  correct = op === "+" ? a + b : a - b;
-
-  const cells = [
+  const cells=[
     "i","i","i",
     "",Math.floor(a/10),a%10,
     op,Math.floor(b/10),b%10,
@@ -370,20 +393,17 @@ function showMath(){
   cells.forEach((v,i)=>{
     const c=document.createElement("div");
     c.className="cell";
-    if(i>=6 && i<=8) c.classList.add("row3");
-
+    if(i>=6&&i<=8)c.classList.add("row3");
     if(v==="i"){
       const inp=document.createElement("input");
-      inp.inputMode="numeric";
-      inp.maxLength=1;
+      inp.inputMode="numeric"; inp.maxLength=1;
       c.appendChild(inp);
     } else if(v==="+"||v==="-"){
-      c.textContent=v;
-      c.classList.add("op");
+      c.textContent=v; c.classList.add("op");
     } else {
       c.textContent=v;
-      if(i%3===2) c.classList.add("ones","green-focus");
-      if(i%3===1) c.classList.add("tens");
+      if(i%3===2)c.classList.add("ones","green-focus");
+      if(i%3===1)c.classList.add("tens");
     }
     grid.appendChild(c);
   });
@@ -398,11 +418,13 @@ function showMath(){
 }
 
 function check(){
-  const val=[...grid.querySelectorAll("input")].map(i=>i.value||"").join("");
-  if(parseInt(val)===correct){
+  const answer=[...grid.querySelectorAll(".cell")].slice(9,12)
+    .map(c=>c.querySelector("input").value||"").join("");
+  if(parseInt(answer)===correct){
     successSound.play().catch(()=>{});
+    firework();
     mathOverlay.style.display="none";
-    bgMusic.volume = 0.3;
+    bgMusic.volume=0.3;
     paused=false;
     taskIndex++;
     if(taskIndex>=tasks.length){
@@ -411,26 +433,28 @@ function check(){
   }
 }
 
+function closeMath(){
+  mathOverlay.style.display="none";
+  bgMusic.volume=0.3;
+  paused=false;
+}
+
 function loop(){
   if(!paused){
     let next=worldX;
-    if(right) next-=speed;
-    if(left) next+=speed;
-
+    if(right)next-=speed;
+    if(left)next+=speed;
     vy-=gravity;
     let bottom=parseFloat(player.style.bottom||80)+vy;
     if(bottom<=80){bottom=80;vy=0;onGround=true;}
-
     world.style.left=next+"px";
     worldX=next;
     player.style.bottom=bottom+"px";
-
     document.querySelectorAll(".obstacle").forEach(o=>{
       const pr=player.getBoundingClientRect();
       const r=o.getBoundingClientRect();
-      if(pr.right>r.left && pr.left<r.right){
-        showMath();
-        o.remove();
+      if(pr.right>r.left&&pr.left<r.right){
+        showMath(); o.remove();
       }
     });
   }
