@@ -124,7 +124,6 @@ input{ width:100%; height:100%; border:none; font-size:2rem; text-align:center; 
 
 <div id="finish">🎉 Bra jobbat!<br>Du är klar! 👏</div>
 
-<!-- ===== LJUD (ROOT) ===== -->
 <audio id="bgMusic" src="Music.mp3" loop></audio>
 <audio id="successSound" src="Correct.mp3"></audio>
 <audio id="jumpSound" src="Jump.mp3"></audio>
@@ -200,16 +199,28 @@ function showMath(){
   const [a,b]=tasks[taskIndex].split("+").map(Number);
   correct=a+b;
 
-  const cells=["i","i","i","",Math.floor(a/10),a%10,"+",Math.floor(b/10),b%10,"i","i","i"];
+  const aStr=String(a).padStart(2,"0");
+  const bStr=String(b).padStart(2,"0");
+
+  const cells=[
+    "i","i","i",
+    "", aStr[0], aStr[1],
+    "+", bStr[0], bStr[1],
+    "i","i","i"
+  ];
+
   cells.forEach((v,i)=>{
-    const c=document.createElement("div"); c.className="cell";
+    const c=document.createElement("div");
+    c.className="cell";
     if(i>=6&&i<=8)c.classList.add("row3");
     if(v==="i"){
       const inp=document.createElement("input");
       inp.inputMode="numeric"; inp.maxLength=1;
       c.appendChild(inp);
-    } else if(v==="+"){ c.textContent="+"; c.classList.add("op"); }
-    else{
+    } else if(v==="+"){
+      c.textContent="+";
+      c.classList.add("op");
+    } else {
       c.textContent=v;
       if(i%3===2)c.classList.add("ones","green-focus");
       if(i%3===1)c.classList.add("tens");
@@ -262,7 +273,8 @@ function loop(){
     document.querySelectorAll(".obstacle").forEach(o=>{
       const pr=player.getBoundingClientRect(), r=o.getBoundingClientRect();
       if(pr.right>r.left&&pr.left<r.right){
-        showMath(); o.remove();
+        showMath();
+        o.remove();
       }
     });
   }
