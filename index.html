@@ -6,7 +6,6 @@
 <title>Mattepromenaden</title>
 
 <style>
-/* ===== GLOBALT ===== */
 * { box-sizing:border-box; -webkit-touch-callout:none; }
 body { margin:0; font-family:system-ui,sans-serif; background:#1e3a8a; overflow:hidden; }
 
@@ -17,8 +16,8 @@ body { margin:0; font-family:system-ui,sans-serif; background:#1e3a8a; overflow:
   background:linear-gradient(#60a5fa,#86efac);
   overflow:hidden;
 }
-#world{ position:absolute; bottom:0; left:0; width:4000px; height:100%; }
-.ground{ position:absolute; bottom:0; width:4000px; height:80px; background:#22c55e; }
+#world{ position:absolute; bottom:0; left:0; width:4200px; height:100%; }
+.ground{ position:absolute; bottom:0; width:4200px; height:80px; background:#22c55e; }
 
 /* ===== MILJÖ ===== */
 .sun{ position:absolute; top:20px; right:40px; width:80px; height:80px; background:#fde047; border-radius:50%; box-shadow:0 0 20px rgba(253,224,71,.6); }
@@ -30,8 +29,14 @@ body { margin:0; font-family:system-ui,sans-serif; background:#1e3a8a; overflow:
 
 /* ===== HINDER ===== */
 @keyframes wiggle{0%{transform:translateX(0)}50%{transform:translateX(10px)}100%{transform:translateX(0)}}
-.hedgehog{ position:absolute; bottom:80px; width:36px; height:22px; background:#92400e; border-radius:12px; animation:wiggle 3s ease-in-out infinite; }
-.hedgehog::before{ content:""; position:absolute; top:-8px; left:0; width:36px; height:12px; background:#78350f;
+.hedgehog{
+  position:absolute; bottom:80px; width:36px; height:22px;
+  background:#92400e; border-radius:12px;
+  animation:wiggle 3s ease-in-out infinite;
+}
+.hedgehog::before{
+  content:""; position:absolute; top:-8px; left:0;
+  width:36px; height:12px; background:#78350f;
   clip-path:polygon(0% 100%,10% 0%,20% 100%,30% 0%,40% 100%,50% 0%,60% 100%,70% 0%,80% 100%,90% 0%,100% 100%);
 }
 .hill{ position:absolute; bottom:80px; width:140px; height:70px; background:#4b5563; border-radius:70px 70px 0 0; }
@@ -61,7 +66,7 @@ button{
 .ones{ color:#16a34a; font-weight:700; background:#f1f5f9; }
 .tens{ color:#2563eb; font-weight:600; }
 .op{ font-weight:700; }
-input{ width:100%; height:100%; border:none; font-size:2rem; text-align:center; background:transparent; user-select:text; -webkit-user-select:text; }
+input{ width:100%; height:100%; border:none; font-size:2rem; text-align:center; background:transparent; }
 .green-focus{ box-shadow:inset 0 0 0 4px rgba(22,163,74,.4); }
 .blue-focus{ box-shadow:inset 0 0 0 4px rgba(37,99,235,.4); }
 
@@ -88,10 +93,10 @@ input{ width:100%; height:100%; border:none; font-size:2rem; text-align:center; 
     <div class="flower" style="left:360px"></div>
 
     <div class="hill" style="left:700px"></div>
-    <div class="hill" style="left:2200px"></div>
+    <div class="hill" style="left:2300px"></div>
 
     <div class="hedgehog obstacle" style="left:1200px"></div>
-    <div class="hedgehog obstacle" style="left:2600px"></div>
+    <div class="hedgehog obstacle" style="left:2800px"></div>
   </div>
 
   <div id="player">
@@ -119,11 +124,13 @@ input{ width:100%; height:100%; border:none; font-size:2rem; text-align:center; 
 
 <div id="finish">🎉 Bra jobbat!<br>Du är klar! 👏</div>
 
-<audio id="bgMusic" src="audio/background.mp3" loop></audio>
-<audio id="successSound" src="audio/applause.mp3"></audio>
+<!-- ===== LJUD (ROOT) ===== -->
+<audio id="bgMusic" src="Music.mp3" loop></audio>
+<audio id="successSound" src="Correct.mp3"></audio>
+<audio id="jumpSound" src="Jump.mp3"></audio>
 
 <script>
-/* ===== A4 AUTOMATISERING (ADDITION) ===== */
+/* ===== A4 – AUTOMATISERING (ADDITION) ===== */
 const rawA4 = `
 39 + 15 =
 63 + 28 =
@@ -139,7 +146,7 @@ const tasks = rawA4
 
 let taskIndex=0, correct=0, paused=false;
 
-/* ===== LJUDSTART (iOS-SÄKER) ===== */
+/* ===== LJUDSTART (iOS) ===== */
 let audioStarted=false;
 function startAudio(){
   if(!audioStarted){
@@ -177,7 +184,16 @@ leftBtn.onpointerdown=e=>{e.preventDefault();left=true};
 leftBtn.onpointerup=()=>left=false;
 rightBtn.onpointerdown=e=>{e.preventDefault();right=true};
 rightBtn.onpointerup=()=>right=false;
-jumpBtn.onpointerdown=e=>{e.preventDefault();if(onGround){vy=11;onGround=false;}};
+
+jumpBtn.onpointerdown=e=>{
+  e.preventDefault();
+  startAudio();
+  if(onGround){
+    jumpSound.currentTime=0;
+    jumpSound.play().catch(()=>{});
+    vy=11; onGround=false;
+  }
+};
 
 function showMath(){
   paused=true; bgMusic.volume=0.1; grid.innerHTML="";
@@ -189,7 +205,9 @@ function showMath(){
     const c=document.createElement("div"); c.className="cell";
     if(i>=6&&i<=8)c.classList.add("row3");
     if(v==="i"){
-      const inp=document.createElement("input"); inp.inputMode="numeric"; inp.maxLength=1; c.appendChild(inp);
+      const inp=document.createElement("input");
+      inp.inputMode="numeric"; inp.maxLength=1;
+      c.appendChild(inp);
     } else if(v==="+"){ c.textContent="+"; c.classList.add("op"); }
     else{
       c.textContent=v;
@@ -209,7 +227,10 @@ function showMath(){
 }
 
 function check(){
-  const ans=[...grid.querySelectorAll(".cell")].slice(9,12).map(c=>c.querySelector("input").value||"").join("");
+  const ans=[...grid.querySelectorAll(".cell")]
+    .slice(9,12)
+    .map(c=>c.querySelector("input").value||"")
+    .join("");
   if(parseInt(ans)===correct){
     successSound.play().catch(()=>{});
     firework();
@@ -221,19 +242,28 @@ function check(){
   }
 }
 
-function closeMath(){ mathOverlay.style.display="none"; bgMusic.volume=0.3; paused=false; }
+function closeMath(){
+  mathOverlay.style.display="none";
+  bgMusic.volume=0.3;
+  paused=false;
+}
 
 function loop(){
   if(!paused){
     let next=worldX;
-    if(right)next-=speed; if(left)next+=speed;
+    if(right)next-=speed;
+    if(left)next+=speed;
     vy-=gravity;
     let bottom=parseFloat(player.style.bottom||80)+vy;
     if(bottom<=80){bottom=80;vy=0;onGround=true;}
-    world.style.left=next+"px"; worldX=next; player.style.bottom=bottom+"px";
+    world.style.left=next+"px";
+    worldX=next;
+    player.style.bottom=bottom+"px";
     document.querySelectorAll(".obstacle").forEach(o=>{
       const pr=player.getBoundingClientRect(), r=o.getBoundingClientRect();
-      if(pr.right>r.left&&pr.left<r.right){ showMath(); o.remove(); }
+      if(pr.right>r.left&&pr.left<r.right){
+        showMath(); o.remove();
+      }
     });
   }
   requestAnimationFrame(loop);
