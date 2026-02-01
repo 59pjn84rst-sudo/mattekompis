@@ -20,63 +20,103 @@ body { margin:0; font-family:system-ui,sans-serif; background:#1e3a8a; overflow:
 .ground{ position:absolute; bottom:0; width:4200px; height:80px; background:#22c55e; }
 
 /* ===== MILJÖ ===== */
-.sun{ position:absolute; top:20px; right:40px; width:80px; height:80px; background:#fde047; border-radius:50%; box-shadow:0 0 20px rgba(253,224,71,.6); }
+.sun{ position:absolute; top:20px; right:40px; width:80px; height:80px; background:#fde047; border-radius:50%; }
 .tree{ position:absolute; bottom:80px; width:40px; height:80px; }
 .tree::before{ content:""; position:absolute; bottom:0; left:14px; width:12px; height:40px; background:#92400e; }
 .tree::after{ content:""; position:absolute; bottom:30px; left:-10px; width:60px; height:50px; background:#16a34a; border-radius:50%; }
 .flower{ position:absolute; bottom:80px; width:16px; height:16px; background:#f472b6; border-radius:50%; }
-.flower::after{ content:""; position:absolute; top:16px; left:7px; width:2px; height:12px; background:#15803d; }
 
-/* ===== HINDER ===== */
+/* ===== HINDER / PLATTFORMAR ===== */
 @keyframes wiggle{0%{transform:translateX(0)}50%{transform:translateX(10px)}100%{transform:translateX(0)}}
 .hedgehog{
   position:absolute; bottom:80px; width:36px; height:22px;
   background:#92400e; border-radius:12px;
   animation:wiggle 3s ease-in-out infinite;
 }
-.hedgehog::before{
-  content:""; position:absolute; top:-8px; left:0;
-  width:36px; height:12px; background:#78350f;
-  clip-path:polygon(0% 100%,10% 0%,20% 100%,30% 0%,40% 100%,50% 0%,60% 100%,70% 0%,80% 100%,90% 0%,100% 100%);
+.hill{
+  position:absolute; bottom:80px; width:160px; height:70px;
+  background:#4b5563; border-radius:80px 80px 0 0;
 }
-.hill{ position:absolute; bottom:80px; width:140px; height:70px; background:#4b5563; border-radius:70px 70px 0 0; }
 
 /* ===== GUBBE ===== */
 #player{ position:absolute; left:45%; bottom:80px; width:40px; }
-.head{ width:24px; height:24px; background:#fde68a; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+.head{
+  width:24px; height:24px; background:#fde68a;
+  border-radius:50%; position:relative;
+  display:flex; align-items:center; justify-content:center;
+}
+/* keps */
+.cap{
+  position:absolute; top:-6px; left:-4px;
+  width:32px; height:12px;
+  background:#dc2626;
+  border-radius:6px 6px 2px 2px;
+}
 .body{ width:40px; height:28px; background:#2563eb; border-radius:8px; margin-top:4px; }
 .legs{ display:flex; justify-content:space-between; }
-.leg{ width:16px; height:20px; background:#1e293b; border-radius:6px; }
+.leg{
+  width:16px; height:20px; background:#1e293b;
+  border-radius:6px;
+}
+
+/* ben-animation */
+@keyframes walk {
+  0%{transform:rotate(10deg)}
+  50%{transform:rotate(-10deg)}
+  100%{transform:rotate(10deg)}
+}
+.walking .leg{
+  animation:walk .3s infinite alternate;
+}
 
 /* ===== KONTROLLER ===== */
 #controls{ display:flex; justify-content:center; gap:30px; padding:12px; background:#0f172a; }
 button{
   font-size:1.8rem; padding:12px 18px; border-radius:14px;
   border:none; background:#1e3a8a; color:white;
-  user-select:none; -webkit-user-select:none;
-  -webkit-tap-highlight-color:transparent; touch-action:none;
+  touch-action:none;
 }
 
 /* ===== MATTE ===== */
-#mathOverlay{ position:fixed; inset:0; background:rgba(0,0,0,.6); display:none; align-items:center; justify-content:center; }
-.gridWrapper{ background:white; padding:16px; border:3px solid #0f172a; }
-.grid{ display:grid; grid-template-columns:56px 56px 56px; grid-template-rows:56px 56px 56px 56px; }
-.cell{ border:2px solid black; display:flex; align-items:center; justify-content:center; font-size:2rem; background:white; }
+#mathOverlay{
+  position:fixed; inset:0;
+  background:rgba(0,0,0,.6);
+  display:none;
+  align-items:center; justify-content:center;
+  pointer-events:auto;
+}
+.gridWrapper{
+  background:white; padding:16px;
+  border:3px solid #0f172a;
+}
+.grid{
+  display:grid;
+  grid-template-columns:56px 56px 56px;
+  grid-template-rows:56px 56px 56px 56px;
+}
+.cell{
+  border:2px solid black;
+  display:flex; align-items:center; justify-content:center;
+  font-size:2rem;
+}
 .row3{ border-bottom:6px solid black !important; }
-.ones{ color:#16a34a; font-weight:700; background:#f1f5f9; }
-.tens{ color:#2563eb; font-weight:600; }
-.op{ font-weight:700; }
-input{ width:100%; height:100%; border:none; font-size:2rem; text-align:center; background:transparent; }
-.green-focus{ box-shadow:inset 0 0 0 4px rgba(22,163,74,.4); }
-.blue-focus{ box-shadow:inset 0 0 0 4px rgba(37,99,235,.4); }
+.ones{ color:#16a34a; font-weight:700; }
+.tens{ color:#2563eb; }
+input{
+  width:100%; height:100%;
+  border:none; font-size:2rem; text-align:center;
+}
 
 /* ===== FYRVERKERI ===== */
 .firework{ position:fixed; left:50%; top:40%; pointer-events:none; z-index:9999; }
-.spark{ position:absolute; width:8px; height:8px; border-radius:50%; animation:explode 900ms ease-out forwards; }
-@keyframes explode{ from{transform:translate(0,0);opacity:1} to{transform:translate(var(--x),var(--y));opacity:0} }
-
-/* ===== MÅL ===== */
-#finish{ position:fixed; inset:0; background:rgba(0,0,0,.8); display:none; align-items:center; justify-content:center; color:white; font-size:2rem; text-align:center; }
+.spark{
+  position:absolute; width:8px; height:8px; border-radius:50%;
+  animation:explode 900ms ease-out forwards;
+}
+@keyframes explode{
+  from{transform:translate(0,0);opacity:1}
+  to{transform:translate(var(--x),var(--y));opacity:0}
+}
 </style>
 </head>
 
@@ -89,20 +129,21 @@ input{ width:100%; height:100%; border:none; font-size:2rem; text-align:center; 
 
     <div class="tree" style="left:400px"></div>
     <div class="tree" style="left:1600px"></div>
-    <div class="flower" style="left:320px"></div>
-    <div class="flower" style="left:360px"></div>
 
-    <div class="hill" style="left:700px"></div>
-    <div class="hill" style="left:2300px"></div>
+    <div class="hill platform" style="left:800px"></div>
+    <div class="hill platform" style="left:2000px"></div>
 
     <div class="hedgehog obstacle" style="left:1200px"></div>
-    <div class="hedgehog obstacle" style="left:2800px"></div>
   </div>
 
   <div id="player">
-    <div class="head">🙂</div>
+    <div class="head">
+      🙂<div class="cap"></div>
+    </div>
     <div class="body"></div>
-    <div class="legs"><div class="leg"></div><div class="leg"></div></div>
+    <div class="legs">
+      <div class="leg"></div><div class="leg"></div>
+    </div>
   </div>
 </div>
 
@@ -117,35 +158,22 @@ input{ width:100%; height:100%; border:none; font-size:2rem; text-align:center; 
     <div class="grid" id="grid"></div>
     <div style="text-align:center;margin-top:10px">
       <button onclick="check()">Klar</button>
-      <button onclick="closeMath()" style="margin-left:10px;background:#475569">Tillbaka</button>
+      <button onclick="closeMath()">Tillbaka</button>
     </div>
   </div>
 </div>
-
-<div id="finish">🎉 Bra jobbat!<br>Du är klar! 👏</div>
 
 <audio id="bgMusic" src="Music.mp3" loop></audio>
 <audio id="successSound" src="Correct.mp3"></audio>
 <audio id="jumpSound" src="Jump.mp3"></audio>
 
 <script>
-/* ===== A4 – AUTOMATISERING (ADDITION) ===== */
-const rawA4 = `
-39 + 15 =
-63 + 28 =
-58 + 34 =
-49 + 32 =
-`;
-
-const tasks = rawA4
-  .replace(/=/g,"")
-  .replace(/\s+/g,"")
-  .split("\n")
-  .filter(t=>t.includes("+"));
-
+/* ===== MATTE ===== */
+const rawA4 = `39+15\n63+28\n58+34`;
+const tasks = rawA4.split("\n");
 let taskIndex=0, correct=0, paused=false;
 
-/* ===== LJUDSTART (iOS) ===== */
+/* ===== LJUD ===== */
 let audioStarted=false;
 function startAudio(){
   if(!audioStarted){
@@ -154,128 +182,97 @@ function startAudio(){
     audioStarted=true;
   }
 }
-document.querySelectorAll("button").forEach(b=>{
-  b.addEventListener("pointerdown",startAudio,{once:true});
-});
-
-/* ===== FYRVERKERI ===== */
-function firework(){
-  const fw=document.createElement("div");
-  fw.className="firework";
-  document.body.appendChild(fw);
-  for(let i=0;i<14;i++){
-    const s=document.createElement("div");
-    s.className="spark";
-    s.style.background=["#22c55e","#2563eb","#facc15","#f472b6","#a855f7"][Math.floor(Math.random()*5)];
-    const a=Math.random()*Math.PI*2, d=60+Math.random()*40;
-    s.style.setProperty("--x",Math.cos(a)*d+"px");
-    s.style.setProperty("--y",Math.sin(a)*d+"px");
-    fw.appendChild(s);
-  }
-  setTimeout(()=>fw.remove(),1000);
-}
 
 /* ===== SPEL ===== */
-let worldX=0,vy=0,onGround=true,left=false,right=false;
-const speed=3,gravity=0.6;
+let worldX=0, vy=0, onGround=true;
+let left=false, right=false;
+const speed=3, gravity=0.6;
 
-leftBtn.onpointerdown=e=>{e.preventDefault();left=true};
-leftBtn.onpointerup=()=>left=false;
-rightBtn.onpointerdown=e=>{e.preventDefault();right=true};
-rightBtn.onpointerup=()=>right=false;
+leftBtn.onpointerdown=()=>{left=true;player.classList.add("walking");startAudio();};
+leftBtn.onpointerup=()=>{left=false;player.classList.remove("walking");};
+rightBtn.onpointerdown=()=>{right=true;player.classList.add("walking");startAudio();};
+rightBtn.onpointerup=()=>{right=false;player.classList.remove("walking");};
 
-jumpBtn.onpointerdown=e=>{
-  e.preventDefault();
+jumpBtn.onpointerdown=()=>{
   startAudio();
   if(onGround){
-    jumpSound.currentTime=0;
     jumpSound.play().catch(()=>{});
     vy=11; onGround=false;
   }
 };
 
 function showMath(){
-  paused=true; bgMusic.volume=0.1; grid.innerHTML="";
+  paused=true; grid.innerHTML="";
   const [a,b]=tasks[taskIndex].split("+").map(Number);
   correct=a+b;
 
-  const aStr=String(a).padStart(2,"0");
-  const bStr=String(b).padStart(2,"0");
+  const aS=String(a).padStart(2,"0");
+  const bS=String(b).padStart(2,"0");
 
-  const cells=[
-    "i","i","i",
-    "", aStr[0], aStr[1],
-    "+", bStr[0], bStr[1],
-    "i","i","i"
-  ];
-
-  cells.forEach((v,i)=>{
-    const c=document.createElement("div");
-    c.className="cell";
-    if(i>=6&&i<=8)c.classList.add("row3");
-    if(v==="i"){
-      const inp=document.createElement("input");
-      inp.inputMode="numeric"; inp.maxLength=1;
-      c.appendChild(inp);
-    } else if(v==="+"){
-      c.textContent="+";
-      c.classList.add("op");
-    } else {
-      c.textContent=v;
-      if(i%3===2)c.classList.add("ones","green-focus");
-      if(i%3===1)c.classList.add("tens");
-    }
+  const cells=["","", "", "",aS[0],aS[1],"+",bS[0],bS[1],"i","i","i"];
+  cells.forEach(v=>{
+    const c=document.createElement("div"); c.className="cell";
+    if(v==="i"){ const i=document.createElement("input"); c.appendChild(i);}
+    else c.textContent=v;
     grid.appendChild(c);
   });
-
-  const inputs=[...grid.querySelectorAll("input")];
-  inputs[5].addEventListener("input",()=>{
-    grid.querySelectorAll(".green-focus").forEach(e=>e.classList.remove("green-focus"));
-    grid.querySelectorAll(".tens").forEach(e=>e.classList.add("blue-focus"));
-  },{once:true});
 
   mathOverlay.style.display="flex";
 }
 
 function check(){
-  const ans=[...grid.querySelectorAll(".cell")]
-    .slice(9,12)
-    .map(c=>c.querySelector("input").value||"")
-    .join("");
+  const ans=[...grid.querySelectorAll("input")].map(i=>i.value||"").join("");
   if(parseInt(ans)===correct){
     successSound.play().catch(()=>{});
     firework();
     mathOverlay.style.display="none";
-    bgMusic.volume=0.3;
     paused=false;
     taskIndex++;
-    if(taskIndex>=tasks.length) finish.style.display="flex";
   }
 }
+function closeMath(){ mathOverlay.style.display="none"; paused=false; }
 
-function closeMath(){
-  mathOverlay.style.display="none";
-  bgMusic.volume=0.3;
-  paused=false;
+function firework(){
+  const fw=document.createElement("div"); fw.className="firework";
+  document.body.appendChild(fw);
+  for(let i=0;i<12;i++){
+    const s=document.createElement("div"); s.className="spark";
+    s.style.background=["#22c55e","#2563eb","#facc15"][i%3];
+    s.style.setProperty("--x",(Math.random()*120-60)+"px");
+    s.style.setProperty("--y",(Math.random()*-120)+"px");
+    fw.appendChild(s);
+  }
+  setTimeout(()=>fw.remove(),900);
 }
 
 function loop(){
   if(!paused){
     let next=worldX;
-    if(right)next-=speed;
-    if(left)next+=speed;
+    if(right) next-=speed;
+    if(left) next+=speed;
+
     vy-=gravity;
     let bottom=parseFloat(player.style.bottom||80)+vy;
-    if(bottom<=80){bottom=80;vy=0;onGround=true;}
+
+    onGround=false;
+    document.querySelectorAll(".platform").forEach(p=>{
+      const pr=player.getBoundingClientRect();
+      const r=p.getBoundingClientRect();
+      if(pr.bottom<=r.top+10 && pr.right>r.left && pr.left<r.right && vy<=0){
+        bottom = r.top - document.getElementById("game").getBoundingClientRect().bottom;
+        vy=0; onGround=true;
+      }
+    });
+
+    if(bottom<=80){ bottom=80; vy=0; onGround=true; }
+
     world.style.left=next+"px";
     worldX=next;
     player.style.bottom=bottom+"px";
+
     document.querySelectorAll(".obstacle").forEach(o=>{
       const pr=player.getBoundingClientRect(), r=o.getBoundingClientRect();
-      if(pr.right>r.left&&pr.left<r.right){
-        showMath();
-        o.remove();
-      }
+      if(pr.right>r.left && pr.left<r.right){ showMath(); o.remove(); }
     });
   }
   requestAnimationFrame(loop);
