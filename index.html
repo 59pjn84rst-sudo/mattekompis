@@ -263,14 +263,20 @@ function loop(){
   world.style.left = worldX + "px";
   player.style.bottom = bottom + "px";
 
-  // hund följer
-  const target = parseFloat(player.style.left || 0) - 40;
-  dog.style.left = target + "px";
-  if(!left && !right){
-    dog.classList.add("wag");
-  }else{
-    dog.classList.remove("wag");
-  }
+  // ===== HUND – FÖLJER GUBBEN =====
+const playerRect = player.getBoundingClientRect();
+const gameRect = game.getBoundingClientRect();
+
+// placera hunden strax bakom gubben i bild
+const dogLeft = playerRect.left - gameRect.left - 45;
+dog.style.left = dogLeft + "px";
+
+// svansen viftar när gubben står still
+if(!left && !right){
+  dog.classList.add("wag");
+}else{
+  dog.classList.remove("wag");
+}
 
   requestAnimationFrame(loop);
 }
