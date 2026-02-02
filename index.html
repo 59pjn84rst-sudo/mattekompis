@@ -95,55 +95,17 @@ body{
   to{transform:rotate(-10deg)}
 }
 
-/* ===== HUND ===== */
+/* ===== HUND (BILDER) ===== */
 #dog{
   position:absolute;
   bottom:80px;
-  width:28px;
+  width:64px;
+  pointer-events:none;
 }
-.dog-body{
-  width:28px;
-  height:16px;
-  background:#d6a25e;
-  border-radius:10px;
-  position:relative;
-}
-.dog-ear{
-  position:absolute;
-  top:-4px;
-  width:6px;
-  height:6px;
-  background:#c08457;
-  border-radius:50%;
-}
-.dog-ear.left{ left:4px; }
-.dog-ear.right{ right:14px; }
-
-/* endast framben */
-.dog-leg{
-  position:absolute;
-  bottom:-6px;
-  left:6px;
-  width:6px;
-  height:6px;
-  background:#c08457;
-  border-radius:50%;
-}
-
-/* svans – bakåt och viftar alltid */
-.tail{
-  position:absolute;
-  left:-8px;
-  top:6px;
-  width:10px;
-  height:4px;
-  background:#d6a25e;
-  transform-origin:right center;
-  animation:wag .25s infinite alternate;
-}
-@keyframes wag{
-  from{transform:rotate(25deg)}
-  to{transform:rotate(-25deg)}
+#dog img{
+  width:100%;
+  height:auto;
+  display:block;
 }
 
 /* ===== KONTROLLER ===== */
@@ -185,12 +147,7 @@ button{
 
   <!-- HUND -->
   <div id="dog">
-    <div class="dog-body">
-      <div class="dog-ear left"></div>
-      <div class="dog-ear right"></div>
-      <div class="dog-leg"></div>
-      <div class="tail"></div>
-    </div>
+    <img id="dogImg" src="dog-sit.png" alt="Hund">
   </div>
 </div>
 
@@ -219,27 +176,35 @@ let worldX=0;
 let vy=0;
 let onGround=true;
 let left=false, right=false;
+let paused=false;
+
 const speed=3;
 const gravity=0.6;
+
+const dogImg=document.getElementById("dogImg");
 
 leftBtn.onpointerdown=()=>{
   left=true;
   player.classList.add("walking");
+  dogImg.src="dog-walk.png";
   startAudio();
 };
-leftBtn.onpointerup=()=>{
-  left=false;
-  player.classList.remove("walking");
-};
+leftBtn.onpointerup=stopMove;
+
 rightBtn.onpointerdown=()=>{
   right=true;
   player.classList.add("walking");
+  dogImg.src="dog-walk.png";
   startAudio();
 };
-rightBtn.onpointerup=()=>{
+rightBtn.onpointerup=stopMove;
+
+function stopMove(){
+  left=false;
   right=false;
   player.classList.remove("walking");
-};
+  dogImg.src="dog-sit.png";
+}
 
 jumpBtn.onpointerdown=()=>{
   startAudio();
@@ -252,10 +217,11 @@ jumpBtn.onpointerdown=()=>{
 };
 
 function loop(){
-  if(right) worldX -= speed;
-  if(left) worldX += speed;
+  if(!paused){
+    if(right) worldX -= speed;
+    if(left) worldX += speed;
+  }
 
-  // hopplogik
   vy -= gravity;
   let bottom = parseFloat(player.style.bottom || 80) + vy;
 
@@ -286,7 +252,7 @@ function loop(){
 
   // hund följer bakom gubben
   const gameRect = game.getBoundingClientRect();
-  dog.style.left = (playerRect.left - gameRect.left - 45) + "px";
+  dog.style.left = (playerRect.left - gameRect.left - 70) + "px";
 
   requestAnimationFrame(loop);
 }
