@@ -3,20 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mattepromenaden</title>
+<title>Spelbas</title>
 
 <style>
 *{
   box-sizing:border-box;
-  user-select:none;
-  -webkit-user-select:none;
   -webkit-tap-highlight-color:transparent;
+  user-select:none;
 }
 body{
   margin:0;
-  background:#1e3a8a;
-  overflow:hidden;
+  background:#60a5fa;
   font-family:system-ui,sans-serif;
+  overflow:hidden;
 }
 
 /* ===== SPEL ===== */
@@ -30,92 +29,37 @@ body{
   position:absolute;
   bottom:0;
   left:0;
-  width:7200px;
+  width:4000px;
   height:100%;
 }
-
-/* ===== MARK (BACKAR) ===== */
-.segment{
+.ground{
   position:absolute;
   bottom:0;
+  width:4000px;
+  height:80px;
   background:#22c55e;
 }
-.segment.flat{ height:80px; }
-.segment.up{ height:120px; }
-.segment.down{ height:60px; }
-
-/* ===== MILJÖ ===== */
-.tree{
+.hill{
   position:absolute;
   bottom:80px;
-  width:40px;
-  height:90px;
-}
-.tree::before{
-  content:"";
-  position:absolute;
-  bottom:0; left:14px;
-  width:12px; height:40px;
-  background:#92400e;
-}
-.tree::after{
-  content:"";
-  position:absolute;
-  bottom:30px; left:-15px;
-  width:70px; height:60px;
-  background:#16a34a;
-  border-radius:50%;
-}
-
-/* ===== HINDER ===== */
-.obstacle{
-  position:absolute;
-  bottom:80px;
-  width:44px;
-  height:44px;
-  background:#7c3aed;
-  border-radius:8px;
-  color:white;
-  font-size:1.6rem;
-  font-weight:700;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-
-/* ===== FLAGGA ===== */
-#goal{
-  position:absolute;
-  bottom:80px;
-  left:6800px;
-}
-#pole{
-  width:6px;
-  height:140px;
-  background:white;
-}
-#flag{
-  position:absolute;
-  left:6px;
-  bottom:20px;
-  width:36px;
-  height:24px;
-  background:#ef4444;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:18px;
+  left:900px;
+  width:200px;
+  height:100px;
+  background:#4b5563;
+  border-radius:100px 100px 0 0;
 }
 
 /* ===== GUBBE ===== */
 #player{
   position:absolute;
-  left:200px;
+  left:50%;
+  transform:translateX(-50%);
   bottom:80px;
   width:40px;
 }
 .head{
-  width:24px;height:24px;
+  width:24px;
+  height:24px;
   background:#fde68a;
   border-radius:50%;
   display:flex;
@@ -124,10 +68,11 @@ body{
   margin:0 auto;
 }
 .body{
-  width:20px;height:28px;
+  width:20px;
+  height:28px;
   background:#2563eb;
-  margin:2px auto 0;
   border-radius:6px;
+  margin:2px auto 0;
 }
 .legs{
   display:flex;
@@ -136,7 +81,8 @@ body{
   margin:0 auto;
 }
 .leg{
-  width:12px;height:20px;
+  width:12px;
+  height:20px;
   background:#1e293b;
   border-radius:6px;
 }
@@ -152,20 +98,43 @@ body{
 #dog{
   position:absolute;
   bottom:80px;
-  left:160px;
   width:28px;
 }
 .dog-body{
-  width:28px;height:16px;
+  width:28px;
+  height:16px;
   background:#d6a25e;
   border-radius:10px;
+  position:relative;
 }
-.tail{
-  width:10px;height:4px;
-  background:#d6a25e;
+.dog-ear{
   position:absolute;
-  right:-8px;top:6px;
-  transform-origin:left center;
+  top:-4px;
+  width:6px;
+  height:6px;
+  background:#c08457;
+  border-radius:50%;
+}
+.dog-ear.left{ left:4px; }
+.dog-ear.right{ right:4px; }
+.dog-leg{
+  position:absolute;
+  bottom:-6px;
+  width:6px;
+  height:6px;
+  background:#c08457;
+  border-radius:50%;
+}
+.dog-leg.l1{ left:4px; }
+.dog-leg.l2{ right:4px; }
+.tail{
+  position:absolute;
+  left:-8px;
+  top:6px;
+  width:10px;
+  height:4px;
+  background:#d6a25e;
+  transform-origin:right center;
 }
 .wag .tail{
   animation:wag .3s infinite alternate;
@@ -173,13 +142,6 @@ body{
 @keyframes wag{
   from{transform:rotate(20deg)}
   to{transform:rotate(-20deg)}
-}
-#bark{
-  position:absolute;
-  top:-24px;
-  left:-10px;
-  font-size:14px;
-  display:none;
 }
 
 /* ===== KONTROLLER ===== */
@@ -205,32 +167,10 @@ button{
 
 <div id="game">
   <div id="world">
-
-    <!-- MARK -->
-    <div class="segment flat" style="left:0;width:800px"></div>
-    <div class="segment up" style="left:800px;width:600px"></div>
-    <div class="segment flat" style="left:1400px;width:600px"></div>
-    <div class="segment down" style="left:2000px;width:600px"></div>
-    <div class="segment flat" style="left:2600px;width:1000px"></div>
-
-    <!-- TRÄD -->
-    <div class="tree" style="left:500px"></div>
-    <div class="tree" style="left:1800px"></div>
-    <div class="tree" style="left:3000px"></div>
-
-    <!-- HINDER -->
-    <div class="obstacle" style="left:900px">?</div>
-    <div class="obstacle" style="left:1600px">?</div>
-    <div class="obstacle" style="left:2400px">?</div>
-
-    <!-- MÅL -->
-    <div id="goal">
-      <div id="pole"></div>
-      <div id="flag">👍</div>
-    </div>
+    <div class="ground"></div>
+    <div class="hill"></div>
   </div>
 
-  <!-- GUBBE -->
   <div id="player">
     <div class="head">🙂</div>
     <div class="body"></div>
@@ -239,11 +179,14 @@ button{
     </div>
   </div>
 
-  <!-- HUND -->
   <div id="dog">
-    <div id="bark">voff voff!</div>
-    <div class="dog-body"></div>
-    <div class="tail"></div>
+    <div class="dog-body">
+      <div class="dog-ear left"></div>
+      <div class="dog-ear right"></div>
+      <div class="dog-leg l1"></div>
+      <div class="dog-leg l2"></div>
+      <div class="tail"></div>
+    </div>
   </div>
 </div>
 
@@ -253,35 +196,85 @@ button{
   <button id="rightBtn">➡️</button>
 </div>
 
+<audio id="bgMusic" src="Music.mp3" loop></audio>
+<audio id="jumpSound" src="Jump.mp3"></audio>
+
 <script>
-let x=200;
-let dogX=160;
-let vx=0;
-let walking=false;
+/* ===== LJUD (iOS-säkert) ===== */
+let audioStarted=false;
+function startAudio(){
+  if(!audioStarted){
+    bgMusic.volume=0.3;
+    bgMusic.play().catch(()=>{});
+    audioStarted=true;
+  }
+}
 
-function update(){
-  x+=vx;
-  if(x>6700) x=6700; // stop vid mål
+/* ===== SPELLOGIK ===== */
+let worldX=0;
+let vy=0;
+let onGround=true;
+let left=false, right=false;
+const speed=3, gravity=0.6;
 
-  player.style.left=x+"px";
+leftBtn.onpointerdown=()=>{left=true;player.classList.add("walking");startAudio();};
+leftBtn.onpointerup=()=>{left=false;player.classList.remove("walking");};
+rightBtn.onpointerdown=()=>{right=true;player.classList.add("walking");startAudio();};
+rightBtn.onpointerup=()=>{right=false;player.classList.remove("walking");};
+
+jumpBtn.onpointerdown=()=>{
+  startAudio();
+  if(onGround){
+    jumpSound.currentTime=0;
+    jumpSound.play().catch(()=>{});
+    vy=11;
+    onGround=false;
+  }
+};
+
+function loop(){
+  if(right) worldX -= speed;
+  if(left) worldX += speed;
+
+  vy -= gravity;
+  let bottom = parseFloat(player.style.bottom || 80) + vy;
+
+  // mark
+  if(bottom <= 80){
+    bottom = 80;
+    vy = 0;
+    onGround = true;
+  }
+
+  // kulle
+  const hillRect = document.querySelector(".hill").getBoundingClientRect();
+  const playerRect = player.getBoundingClientRect();
+  if(
+    playerRect.bottom <= hillRect.top + 10 &&
+    playerRect.right > hillRect.left &&
+    playerRect.left < hillRect.right &&
+    vy <= 0
+  ){
+    bottom = hillRect.top - game.getBoundingClientRect().bottom;
+    vy = 0;
+    onGround = true;
+  }
+
+  world.style.left = worldX + "px";
+  player.style.bottom = bottom + "px";
 
   // hund följer
-  if(Math.abs(dogX-x)>40){
-    dogX+= (x>dogX?2:-2);
-    dog.classList.remove("wag");
-  }else{
+  const target = parseFloat(player.style.left || 0) - 40;
+  dog.style.left = target + "px";
+  if(!left && !right){
     dog.classList.add("wag");
+  }else{
+    dog.classList.remove("wag");
   }
-  dog.style.left=dogX+"px";
 
-  requestAnimationFrame(update);
+  requestAnimationFrame(loop);
 }
-update();
-
-rightBtn.onpointerdown=()=>{vx=2;player.classList.add("walking");};
-rightBtn.onpointerup=()=>{vx=0;player.classList.remove("walking");};
-leftBtn.onpointerdown=()=>{vx=-2;player.classList.add("walking");};
-leftBtn.onpointerup=()=>{vx=0;player.classList.remove("walking");};
+loop();
 </script>
 
 </body>
