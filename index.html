@@ -117,34 +117,33 @@ body{
   border-radius:50%;
 }
 .dog-ear.left{ left:4px; }
-.dog-ear.right{ right:4px; }
+.dog-ear.right{ right:14px; }
 
-/* endast FRÄMRE ben – tar bort bakre “pricken” */
+/* endast framben */
 .dog-leg{
   position:absolute;
   bottom:-6px;
-  left:4px;
+  left:6px;
   width:6px;
   height:6px;
   background:#c08457;
   border-radius:50%;
 }
 
+/* svans – bakåt och viftar alltid */
 .tail{
   position:absolute;
-  right:-8px;
+  left:-8px;
   top:6px;
   width:10px;
   height:4px;
   background:#d6a25e;
-  transform-origin:left center;
-}
-.wag .tail{
-  animation:wag .3s infinite alternate;
+  transform-origin:right center;
+  animation:wag .25s infinite alternate;
 }
 @keyframes wag{
-  from{transform:rotate(20deg)}
-  to{transform:rotate(-20deg)}
+  from{transform:rotate(25deg)}
+  to{transform:rotate(-25deg)}
 }
 
 /* ===== KONTROLLER ===== */
@@ -174,14 +173,17 @@ button{
     <div class="hill"></div>
   </div>
 
+  <!-- GUBBE -->
   <div id="player">
     <div class="head">🙂</div>
     <div class="body"></div>
     <div class="legs">
-      <div class="leg"></div><div class="leg"></div>
+      <div class="leg"></div>
+      <div class="leg"></div>
     </div>
   </div>
 
+  <!-- HUND -->
   <div id="dog">
     <div class="dog-body">
       <div class="dog-ear left"></div>
@@ -202,7 +204,7 @@ button{
 <audio id="jumpSound" src="Jump.mp3"></audio>
 
 <script>
-/* ===== LJUD ===== */
+/* ===== LJUD (iOS-säkert) ===== */
 let audioStarted=false;
 function startAudio(){
   if(!audioStarted){
@@ -217,7 +219,8 @@ let worldX=0;
 let vy=0;
 let onGround=true;
 let left=false, right=false;
-const speed=3, gravity=0.6;
+const speed=3;
+const gravity=0.6;
 
 leftBtn.onpointerdown=()=>{
   left=true;
@@ -256,8 +259,24 @@ function loop(){
   vy -= gravity;
   let bottom = parseFloat(player.style.bottom || 80) + vy;
 
+  // mark
   if(bottom <= 80){
     bottom = 80;
+    vy = 0;
+    onGround = true;
+  }
+
+  // kulle
+  const hill = document.querySelector(".hill");
+  const hillRect = hill.getBoundingClientRect();
+  const playerRect = player.getBoundingClientRect();
+  if(
+    playerRect.bottom <= hillRect.top + 10 &&
+    playerRect.right > hillRect.left &&
+    playerRect.left < hillRect.right &&
+    vy <= 0
+  ){
+    bottom = hillRect.top - game.getBoundingClientRect().bottom;
     vy = 0;
     onGround = true;
   }
@@ -265,17 +284,9 @@ function loop(){
   world.style.left = worldX + "px";
   player.style.bottom = bottom + "px";
 
-  // hund följer – alltid synlig
-  const playerRect = player.getBoundingClientRect();
+  // hund följer bakom gubben
   const gameRect = game.getBoundingClientRect();
   dog.style.left = (playerRect.left - gameRect.left - 45) + "px";
-
-  // svans
-  if(!left && !right){
-    dog.classList.add("wag");
-  }else{
-    dog.classList.remove("wag");
-  }
 
   requestAnimationFrame(loop);
 }
