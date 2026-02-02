@@ -3,13 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Spelbas</title>
+<title>Stabil spelbas</title>
 
 <style>
 *{
   box-sizing:border-box;
-  -webkit-tap-highlight-color:transparent;
   user-select:none;
+  -webkit-user-select:none;
+  -webkit-tap-highlight-color:transparent;
 }
 body{
   margin:0;
@@ -117,24 +118,26 @@ body{
 }
 .dog-ear.left{ left:4px; }
 .dog-ear.right{ right:4px; }
+
+/* endast FRÄMRE ben – tar bort bakre “pricken” */
 .dog-leg{
   position:absolute;
   bottom:-6px;
+  left:4px;
   width:6px;
   height:6px;
   background:#c08457;
   border-radius:50%;
 }
-.dog-leg.l1{ left:4px; }
-.dog-leg.l2{ right:4px; }
+
 .tail{
   position:absolute;
-  left:-8px;
+  right:-8px;
   top:6px;
   width:10px;
   height:4px;
   background:#d6a25e;
-  transform-origin:right center;
+  transform-origin:left center;
 }
 .wag .tail{
   animation:wag .3s infinite alternate;
@@ -183,8 +186,7 @@ button{
     <div class="dog-body">
       <div class="dog-ear left"></div>
       <div class="dog-ear right"></div>
-      <div class="dog-leg l1"></div>
-      <div class="dog-leg l2"></div>
+      <div class="dog-leg"></div>
       <div class="tail"></div>
     </div>
   </div>
@@ -200,7 +202,7 @@ button{
 <audio id="jumpSound" src="Jump.mp3"></audio>
 
 <script>
-/* ===== LJUD (iOS-säkert) ===== */
+/* ===== LJUD ===== */
 let audioStarted=false;
 function startAudio(){
   if(!audioStarted){
@@ -217,10 +219,24 @@ let onGround=true;
 let left=false, right=false;
 const speed=3, gravity=0.6;
 
-leftBtn.onpointerdown=()=>{left=true;player.classList.add("walking");startAudio();};
-leftBtn.onpointerup=()=>{left=false;player.classList.remove("walking");};
-rightBtn.onpointerdown=()=>{right=true;player.classList.add("walking");startAudio();};
-rightBtn.onpointerup=()=>{right=false;player.classList.remove("walking");};
+leftBtn.onpointerdown=()=>{
+  left=true;
+  player.classList.add("walking");
+  startAudio();
+};
+leftBtn.onpointerup=()=>{
+  left=false;
+  player.classList.remove("walking");
+};
+rightBtn.onpointerdown=()=>{
+  right=true;
+  player.classList.add("walking");
+  startAudio();
+};
+rightBtn.onpointerup=()=>{
+  right=false;
+  player.classList.remove("walking");
+};
 
 jumpBtn.onpointerdown=()=>{
   startAudio();
@@ -236,26 +252,12 @@ function loop(){
   if(right) worldX -= speed;
   if(left) worldX += speed;
 
+  // hopplogik
   vy -= gravity;
   let bottom = parseFloat(player.style.bottom || 80) + vy;
 
-  // mark
   if(bottom <= 80){
     bottom = 80;
-    vy = 0;
-    onGround = true;
-  }
-
-  // kulle
-  const hillRect = document.querySelector(".hill").getBoundingClientRect();
-  const playerRect = player.getBoundingClientRect();
-  if(
-    playerRect.bottom <= hillRect.top + 10 &&
-    playerRect.right > hillRect.left &&
-    playerRect.left < hillRect.right &&
-    vy <= 0
-  ){
-    bottom = hillRect.top - game.getBoundingClientRect().bottom;
     vy = 0;
     onGround = true;
   }
@@ -263,20 +265,17 @@ function loop(){
   world.style.left = worldX + "px";
   player.style.bottom = bottom + "px";
 
-  // ===== HUND – FÖLJER GUBBEN =====
-const playerRect = player.getBoundingClientRect();
-const gameRect = game.getBoundingClientRect();
+  // hund följer – alltid synlig
+  const playerRect = player.getBoundingClientRect();
+  const gameRect = game.getBoundingClientRect();
+  dog.style.left = (playerRect.left - gameRect.left - 45) + "px";
 
-// placera hunden strax bakom gubben i bild
-const dogLeft = playerRect.left - gameRect.left - 45;
-dog.style.left = dogLeft + "px";
-
-// svansen viftar när gubben står still
-if(!left && !right){
-  dog.classList.add("wag");
-}else{
-  dog.classList.remove("wag");
-}
+  // svans
+  if(!left && !right){
+    dog.classList.add("wag");
+  }else{
+    dog.classList.remove("wag");
+  }
 
   requestAnimationFrame(loop);
 }
