@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mattepromenaden – spelbas</title>
+<title>Mattepromenaden</title>
 
 <style>
 *{
@@ -14,9 +14,9 @@
 }
 body{
   margin:0;
+  overflow:hidden;
   background:#60a5fa;
   font-family:system-ui,sans-serif;
-  overflow:hidden;
 }
 
 /* ===== SPEL ===== */
@@ -26,65 +26,68 @@ body{
   background:linear-gradient(#60a5fa,#86efac);
   overflow:hidden;
 }
+
 #world{
   position:absolute;
   bottom:0;
   left:0;
-  width:4000px;
+  width:5000px;
   height:100%;
 }
+
 .ground{
   position:absolute;
   bottom:0;
-  width:4000px;
+  width:5000px;
   height:80px;
   background:#22c55e;
 }
+
 .hill{
   position:absolute;
   bottom:80px;
-  left:900px;
-  width:200px;
-  height:100px;
+  left:1000px;
+  width:220px;
+  height:120px;
   background:#4b5563;
-  border-radius:100px 100px 0 0;
+  border-radius:120px 120px 0 0;
 }
 
-/* ===== PLAYER (VIDEO + IMAGE) ===== */
+/* ===== PLAYER ===== */
 #player{
   position:absolute;
   left:50%;
   transform:translateX(-50%);
   bottom:80px;
-  width:70px;
+  width:80px;
   pointer-events:none;
 }
-#player img,
-#player video{
+
+#player video,
+#player img{
   width:100%;
   height:auto;
   display:block;
 }
 
-/* ===== HUND ===== */
+/* ===== DOG ===== */
 #dog{
   position:absolute;
   bottom:80px;
-  width:64px;
+  width:70px;
   pointer-events:none;
 }
 #dog img{
   width:100%;
-  height:auto;
   display:block;
 }
 
-/* ===== KONTROLLER ===== */
+/* ===== CONTROLS ===== */
 #controls{
   display:flex;
   justify-content:center;
   gap:30px;
-  padding:12px;
+  padding:14px;
   background:#0f172a;
 }
 button{
@@ -106,9 +109,8 @@ button{
     <div class="hill"></div>
   </div>
 
-  <!-- PLAYER -->
   <div id="player">
-    <video id="playerWalk"
+    <video id="walkVid"
       src="player-walk.mp4"
       muted
       loop
@@ -116,12 +118,11 @@ button{
       preload="auto"
       style="display:none">
     </video>
-    <img id="playerIdle" src="player-idle.png" alt="Gubbe">
+    <img id="idleImg" src="player-idle.png">
   </div>
 
-  <!-- HUND -->
   <div id="dog">
-    <img id="dogImg" src="dog-sit.png" alt="Hund">
+    <img id="dogImg" src="dog-sit.png">
   </div>
 </div>
 
@@ -135,7 +136,7 @@ button{
 <audio id="jumpSound" src="Jump.mp3"></audio>
 
 <script>
-/* ===== LJUD (iOS-säkert) ===== */
+/* ===== AUDIO START (iPad safe) ===== */
 let audioStarted=false;
 function startAudio(){
   if(!audioStarted){
@@ -145,49 +146,53 @@ function startAudio(){
   }
 }
 
-/* ===== SPELLOGIK ===== */
+/* ===== GAME STATE ===== */
 let worldX=0;
 let vy=0;
 let onGround=true;
-let left=false, right=false;
+let movingLeft=false;
+let movingRight=false;
 
-const speed=3;
+const speed=4;
 const gravity=0.6;
 
-const playerWalk=document.getElementById("playerWalk");
-const playerIdle=document.getElementById("playerIdle");
+const walkVid=document.getElementById("walkVid");
+const idleImg=document.getElementById("idleImg");
 const dogImg=document.getElementById("dogImg");
 
+/* ===== PLAYER ANIMATION ===== */
 function showWalk(){
-  playerIdle.style.display="none";
-  playerWalk.style.display="block";
-  playerWalk.play().catch(()=>{});
+  idleImg.style.display="none";
+  walkVid.style.display="block";
+  walkVid.play().catch(()=>{});
   dogImg.src="dog-walk.png";
 }
+
 function showIdle(){
-  playerWalk.pause();
-  playerWalk.style.display="none";
-  playerIdle.style.display="block";
+  walkVid.pause();
+  walkVid.style.display="none";
+  idleImg.style.display="block";
   dogImg.src="dog-sit.png";
 }
 
+/* ===== CONTROLS ===== */
 leftBtn.onpointerdown=()=>{
-  left=true;
+  movingLeft=true;
   showWalk();
   startAudio();
 };
-leftBtn.onpointerup=stopMove;
-
 rightBtn.onpointerdown=()=>{
-  right=true;
+  movingRight=true;
   showWalk();
   startAudio();
 };
+
+leftBtn.onpointerup=stopMove;
 rightBtn.onpointerup=stopMove;
 
 function stopMove(){
-  left=false;
-  right=false;
+  movingLeft=false;
+  movingRight=false;
   showIdle();
 }
 
@@ -196,27 +201,29 @@ jumpBtn.onpointerdown=()=>{
   if(onGround){
     jumpSound.currentTime=0;
     jumpSound.play().catch(()=>{});
-    vy=11;
+    vy=12;
     onGround=false;
   }
 };
 
+/* ===== GAME LOOP ===== */
 function loop(){
-  if(right) worldX -= speed;
-  if(left) worldX += speed;
+
+  if(movingRight) worldX -= speed;
+  if(movingLeft) worldX += speed;
 
   vy -= gravity;
   let bottom = parseFloat(player.style.bottom || 80) + vy;
 
   if(bottom <= 80){
-    bottom = 80;
-    vy = 0;
-    onGround = true;
+    bottom=80;
+    vy=0;
+    onGround=true;
   }
 
-  const hill = document.querySelector(".hill");
-  const hillRect = hill.getBoundingClientRect();
-  const playerRect = player.getBoundingClientRect();
+  // Hill collision
+  const hillRect=document.querySelector(".hill").getBoundingClientRect();
+  const playerRect=player.getBoundingClientRect();
   if(
     playerRect.bottom <= hillRect.top + 10 &&
     playerRect.right > hillRect.left &&
@@ -224,19 +231,20 @@ function loop(){
     vy <= 0
   ){
     bottom = hillRect.top - game.getBoundingClientRect().bottom;
-    vy = 0;
-    onGround = true;
+    vy=0;
+    onGround=true;
   }
 
-  world.style.left = worldX + "px";
-  player.style.bottom = bottom + "px";
+  world.style.left=worldX+"px";
+  player.style.bottom=bottom+"px";
 
-  // hund följer bakom
-  const gameRect = game.getBoundingClientRect();
-  dog.style.left = (playerRect.left - gameRect.left - 70) + "px";
+  // Dog follow
+  const gameRect=game.getBoundingClientRect();
+  dog.style.left=(playerRect.left - gameRect.left - 80)+"px";
 
   requestAnimationFrame(loop);
 }
+
 loop();
 </script>
 
