@@ -63,7 +63,6 @@ body{
   pointer-events:none;
 }
 
-#player video,
 #player img{
   width:100%;
   height:auto;
@@ -109,18 +108,12 @@ button{
     <div class="hill"></div>
   </div>
 
+  <!-- PLAYER -->
   <div id="player">
-    <video id="walkVid"
-      src="player-walk.mp4"
-      muted
-      loop
-      playsinline
-      preload="auto"
-      style="display:none">
-    </video>
-    <img id="idleImg" src="player-idle.png">
+    <img id="playerImg" src="player-idle.png">
   </div>
 
+  <!-- DOG -->
   <div id="dog">
     <img id="dogImg" src="dog-sit.png">
   </div>
@@ -136,7 +129,7 @@ button{
 <audio id="jumpSound" src="Jump.mp3"></audio>
 
 <script>
-/* ===== AUDIO START (iPad safe) ===== */
+/* ===== AUDIO (iPad safe) ===== */
 let audioStarted=false;
 function startAudio(){
   if(!audioStarted){
@@ -156,34 +149,29 @@ let movingRight=false;
 const speed=4;
 const gravity=0.6;
 
-const walkVid=document.getElementById("walkVid");
-const idleImg=document.getElementById("idleImg");
+const playerImg=document.getElementById("playerImg");
 const dogImg=document.getElementById("dogImg");
 
-/* ===== PLAYER ANIMATION ===== */
-function showWalk(){
-  idleImg.style.display="none";
-  walkVid.style.display="block";
-  walkVid.play().catch(()=>{});
-  dogImg.src="dog-walk.png";
-}
-
-function showIdle(){
-  walkVid.pause();
-  walkVid.style.display="none";
-  idleImg.style.display="block";
-  dogImg.src="dog-sit.png";
+/* ===== PLAYER IMAGE CONTROL ===== */
+function updatePlayerImage(){
+  if(movingLeft || movingRight){
+    playerImg.src="player-walk.gif";
+    dogImg.src="dog-walk.png";
+  }else{
+    playerImg.src="player-idle.png";
+    dogImg.src="dog-sit.png";
+  }
 }
 
 /* ===== CONTROLS ===== */
 leftBtn.onpointerdown=()=>{
   movingLeft=true;
-  showWalk();
+  updatePlayerImage();
   startAudio();
 };
 rightBtn.onpointerdown=()=>{
   movingRight=true;
-  showWalk();
+  updatePlayerImage();
   startAudio();
 };
 
@@ -193,7 +181,7 @@ rightBtn.onpointerup=stopMove;
 function stopMove(){
   movingLeft=false;
   movingRight=false;
-  showIdle();
+  updatePlayerImage();
 }
 
 jumpBtn.onpointerdown=()=>{
