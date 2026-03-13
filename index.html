@@ -5,8 +5,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Mattekompis</title>
 
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-
 <style>
 
 body{
@@ -16,7 +14,9 @@ font-family:sans-serif;
 background:#7ecbff;
 }
 
-button{-webkit-tap-highlight-color:transparent}
+button{
+-webkit-tap-highlight-color:transparent;
+}
 
 #startScreen{
 position:fixed;
@@ -52,8 +52,8 @@ width:200000px;
 background:#2ecc71;
 }
 
-.tree{position:absolute;bottom:80px;font-size:50px}
-.flower{position:absolute;bottom:80px;font-size:24px}
+.tree{position:absolute;bottom:80px;font-size:50px;}
+.flower{position:absolute;bottom:80px;font-size:24px;}
 
 .hill{
 position:absolute;
@@ -84,26 +84,12 @@ bottom:80px;
 left:40%;
 width:140px;
 height:140px;
-display:flex;
-align-items:flex-end;
-justify-content:center;
 }
 
 #player img{
 width:100%;
 height:100%;
 object-fit:contain;
-}
-
-.walking{
-background-image:url("player-walk.PNG");
-background-repeat:no-repeat;
-animation:walk .6s steps(6) infinite;
-}
-
-@keyframes walk{
-from{background-position:0}
-to{background-position:-1536px}
 }
 
 #dog{
@@ -113,7 +99,7 @@ left:30%;
 width:90px;
 }
 
-#dog img{width:100%}
+#dog img{width:100%;}
 
 #controls{
 display:flex;
@@ -148,7 +134,11 @@ border-radius:12px;
 text-align:center;
 }
 
-input{font-size:30px;width:120px;text-align:center}
+input{
+font-size:30px;
+width:120px;
+text-align:center;
+}
 
 #progress{
 position:absolute;
@@ -165,14 +155,9 @@ border-radius:6px;
 <body>
 
 <div id="startScreen">
-
 <img src="icon.PNG" width="160">
 <h1>Mattekompis</h1>
-
 <button onclick="startGame()">Starta</button>
-
-<input type="file" id="photoInput" accept="image/*">
-
 </div>
 
 <div id="game">
@@ -184,7 +169,7 @@ border-radius:6px;
 </div>
 
 <div id="player">
-<img id="playerIdle" src="player-idle.PNG">
+<img id="playerImg" src="player-idle.PNG">
 </div>
 
 <div id="dog">
@@ -215,15 +200,12 @@ border-radius:6px;
 <script>
 
 let worldX=0
-let right=false
-let left=false
+let moving=false
 let vy=0
 let onGround=true
 let paused=false
 
 let tasks=["39+15","63+28","58+34","37+45","44+17"]
-let wrongTasks=[]
-
 let taskIndex=0
 let correct=0
 
@@ -231,14 +213,14 @@ let nextSpawn=800
 
 const world=document.getElementById("world")
 const player=document.getElementById("player")
-const playerIdle=document.getElementById("playerIdle")
+const playerImg=document.getElementById("playerImg")
+const dog=document.getElementById("dog")
 const dogImg=document.getElementById("dogImg")
 
 function startGame(){
 
 document.getElementById("startScreen").style.display="none"
 
-const music=document.getElementById("music")
 music.volume=.3
 music.play()
 
@@ -247,39 +229,43 @@ generateWorld()
 }
 
 function generateWorld(){
-for(let i=0;i<25;i++){
+
+for(let i=0;i<30;i++){
+
 spawnDecoration()
 spawnObstacle()
+
 }
+
 }
 
 function spawnDecoration(){
 
-let x=nextSpawn+Math.random()*400
-let type=Math.random()
+let x=nextSpawn+Math.random()*300
+let r=Math.random()
 
-if(type<0.33){
+if(r<0.33){
 
-let tree=document.createElement("div")
-tree.className="tree"
-tree.style.left=x+"px"
-tree.innerText="🌳"
-world.appendChild(tree)
+let t=document.createElement("div")
+t.className="tree"
+t.style.left=x+"px"
+t.innerText="🌳"
+world.appendChild(t)
 
-}else if(type<0.66){
+}else if(r<0.66){
 
-let flower=document.createElement("div")
-flower.className="flower"
-flower.style.left=x+"px"
-flower.innerText="🌼"
-world.appendChild(flower)
+let f=document.createElement("div")
+f.className="flower"
+f.style.left=x+"px"
+f.innerText="🌼"
+world.appendChild(f)
 
 }else{
 
-let hill=document.createElement("div")
-hill.className="hill"
-hill.style.left=x+"px"
-world.appendChild(hill)
+let h=document.createElement("div")
+h.className="hill"
+h.style.left=x+"px"
+world.appendChild(h)
 
 }
 
@@ -287,144 +273,74 @@ world.appendChild(hill)
 
 function spawnObstacle(){
 
-let obstacle=document.createElement("div")
-obstacle.className="obstacle"
-obstacle.style.left=nextSpawn+"px"
-obstacle.innerText="?"
-world.appendChild(obstacle)
+let o=document.createElement("div")
+o.className="obstacle"
+o.style.left=nextSpawn+"px"
+o.innerText="?"
+
+world.appendChild(o)
 
 nextSpawn+=600
 
 }
 
-document.getElementById("right").onpointerdown=()=>{
-right=true
-player.classList.add("walking")
-playerIdle.style.display="none"
+right.onpointerdown=()=>{
+moving=true
+playerImg.src="player-walk.PNG"
 dogImg.src="dog-walk.png"
 }
 
-document.getElementById("right").onpointerup=()=>{
-right=false
-player.classList.remove("walking")
-playerIdle.style.display="block"
+right.onpointerup=()=>{
+moving=false
+playerImg.src="player-idle.PNG"
 dogImg.src="dog-sit.png"
 }
 
-document.getElementById("left").onpointerdown=()=>left=true
-document.getElementById("left").onpointerup=()=>left=false
+left.onpointerdown=()=>worldX+=6
+left.onpointerup=()=>{}
 
-document.getElementById("jump").onpointerdown=()=>{
+jump.onpointerdown=()=>{
 if(onGround){
 vy=12
 onGround=false
-document.getElementById("jumpSound").play()
+jumpSound.play()
 }
-}
-
-function fireworks(){
-
-for(let i=0;i<20;i++){
-
-let star=document.createElement("div")
-star.innerText="✨"
-star.style.position="absolute"
-star.style.left=(window.innerWidth/2+Math.random()*200-100)+"px"
-star.style.top=(window.innerHeight/2+Math.random()*200-100)+"px"
-star.style.fontSize="24px"
-
-document.body.appendChild(star)
-
-setTimeout(()=>star.remove(),800)
-
-}
-
-}
-
-function dogCelebrate(){
-
-const dog=document.getElementById("dog")
-
-dog.style.transition="transform .2s"
-
-let jump=0
-
-let interval=setInterval(()=>{
-
-dog.style.transform="translateY(-20px)"
-
-setTimeout(()=>{
-dog.style.transform="translateY(0px)"
-},100)
-
-jump++
-
-if(jump==2){
-
-clearInterval(interval)
-
-let text=document.createElement("div")
-text.innerText="Voff!"
-text.style.position="absolute"
-text.style.bottom="160px"
-text.style.left=dog.offsetLeft+"px"
-
-document.body.appendChild(text)
-
-setTimeout(()=>text.remove(),1000)
-
-}
-
-},250)
-
 }
 
 function showMath(){
 
 paused=true
 
-let q
+let q=tasks[taskIndex]
 
-if(wrongTasks.length>0 && Math.random()<.4){
-q=wrongTasks.shift()
-}else{
-q=tasks[taskIndex]
-}
+let p=q.split("+")
+correct=parseInt(p[0])+parseInt(p[1])
 
-const parts=q.split("+")
-correct=parseInt(parts[0])+parseInt(parts[1])
-
-document.getElementById("question").innerText=q
-
-document.getElementById("math").style.display="flex"
+question.innerText=q
+math.style.display="flex"
 
 }
 
 function check(){
 
-const v=parseInt(document.getElementById("answer").value)
+let v=parseInt(answer.value)
 
 if(v===correct){
 
-document.getElementById("correctSound").play()
-fireworks()
-dogCelebrate()
+correctSound.play()
 
-document.getElementById("math").style.display="none"
+math.style.display="none"
 
 taskIndex++
-
-document.getElementById("progress").innerText=taskIndex+" / "+tasks.length
+progress.innerText=taskIndex+" / "+tasks.length
 
 paused=false
 
 if(taskIndex===tasks.length){
+
 spawnFlag()
+
 }
-
-}else{
-
-wrongTasks.push(document.getElementById("question").innerText)
 
 }
 
@@ -432,7 +348,7 @@ wrongTasks.push(document.getElementById("question").innerText)
 
 function spawnFlag(){
 
-const flag=document.createElement("div")
+let flag=document.createElement("div")
 flag.style.position="absolute"
 flag.style.left=(nextSpawn+400)+"px"
 flag.style.bottom="80px"
@@ -447,15 +363,11 @@ function loop(){
 
 if(!paused){
 
-let next=worldX
-
-if(right) next-=4
-if(left) next+=4
+if(moving) worldX-=4
 
 vy-=0.6
 
 let bottom=parseFloat(player.style.bottom||80)
-
 bottom+=vy
 
 if(bottom<=80){
@@ -466,15 +378,15 @@ onGround=true
 
 player.style.bottom=bottom+"px"
 
-const dog=document.getElementById("dog")
 dog.style.left=(player.offsetLeft-120)+"px"
 
-world.style.left=next+"px"
-worldX=next
+world.style.left=worldX+"px"
 
 if(-worldX+window.innerWidth>nextSpawn-1000){
+
 spawnDecoration()
 spawnObstacle()
+
 }
 
 const pr=player.getBoundingClientRect()
@@ -486,7 +398,6 @@ const r=o.getBoundingClientRect()
 if(pr.right>r.left && pr.left<r.right){
 
 showMath()
-
 o.remove()
 
 }
@@ -500,22 +411,6 @@ requestAnimationFrame(loop)
 }
 
 loop()
-
-document.getElementById("photoInput").addEventListener("change",async e=>{
-
-const file=e.target.files[0]
-
-const result=await Tesseract.recognize(file,"eng")
-
-const text=result.data.text
-
-let found=text.match(/\d+\s*\+\s*\d+/g)
-
-if(found){
-tasks=found
-}
-
-})
 
 </script>
 
