@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-
 <title>Mattekompis</title>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
 <style>
 
@@ -15,9 +16,7 @@ font-family:sans-serif;
 background:#7ecbff;
 }
 
-button{
--webkit-tap-highlight-color: transparent;
-}
+button{-webkit-tap-highlight-color:transparent}
 
 #startScreen{
 position:fixed;
@@ -27,6 +26,7 @@ flex-direction:column;
 align-items:center;
 justify-content:center;
 background:#7ecbff;
+gap:15px;
 }
 
 #game{
@@ -41,36 +41,36 @@ position:absolute;
 bottom:0;
 left:0;
 height:100%;
-width:100000px;
+width:200000px;
 }
 
 .ground{
 position:absolute;
 bottom:0;
 height:80px;
-width:100000px;
+width:200000px;
 background:#2ecc71;
 }
 
-.tree{position:absolute;bottom:80px;font-size:50px;}
-.flower{position:absolute;bottom:80px;font-size:24px;}
+.tree{position:absolute;bottom:80px;font-size:50px}
+.flower{position:absolute;bottom:80px;font-size:24px}
 
 .hill{
 position:absolute;
 bottom:80px;
-width:200px;
-height:100px;
+width:240px;
+height:120px;
 background:#27ae60;
-border-radius:200px 200px 0 0;
+border-radius:240px 240px 0 0;
 }
 
 .obstacle{
 position:absolute;
 bottom:80px;
-width:50px;
-height:50px;
+width:60px;
+height:60px;
 background:#8e44ad;
-border-radius:10px;
+border-radius:12px;
 display:flex;
 align-items:center;
 justify-content:center;
@@ -84,9 +84,16 @@ bottom:80px;
 left:40%;
 width:140px;
 height:140px;
+display:flex;
+align-items:flex-end;
+justify-content:center;
 }
 
-#player img{width:100%;}
+#player img{
+width:100%;
+height:100%;
+object-fit:contain;
+}
 
 .walking{
 background-image:url("player-walk.PNG");
@@ -106,7 +113,7 @@ left:30%;
 width:90px;
 }
 
-#dog img{width:100%;}
+#dog img{width:100%}
 
 #controls{
 display:flex;
@@ -141,11 +148,7 @@ border-radius:12px;
 text-align:center;
 }
 
-input{
-font-size:30px;
-width:120px;
-text-align:center;
-}
+input{font-size:30px;width:120px;text-align:center}
 
 #progress{
 position:absolute;
@@ -165,7 +168,10 @@ border-radius:6px;
 
 <img src="icon.PNG" width="160">
 <h1>Mattekompis</h1>
+
 <button onclick="startGame()">Starta</button>
+
+<input type="file" id="photoInput" accept="image/*">
 
 </div>
 
@@ -221,12 +227,12 @@ let wrongTasks=[]
 let taskIndex=0
 let correct=0
 
+let nextSpawn=800
+
 const world=document.getElementById("world")
 const player=document.getElementById("player")
 const playerIdle=document.getElementById("playerIdle")
 const dogImg=document.getElementById("dogImg")
-
-let nextSpawn=800
 
 function startGame(){
 
@@ -241,23 +247,18 @@ generateWorld()
 }
 
 function generateWorld(){
-
-for(let i=0;i<20;i++){
-
+for(let i=0;i<25;i++){
 spawnDecoration()
 spawnObstacle()
-
 }
-
 }
 
 function spawnDecoration(){
 
 let x=nextSpawn+Math.random()*400
-
 let type=Math.random()
 
-if(type<.3){
+if(type<0.33){
 
 let tree=document.createElement("div")
 tree.className="tree"
@@ -265,7 +266,7 @@ tree.style.left=x+"px"
 tree.innerText="🌳"
 world.appendChild(tree)
 
-}else{
+}else if(type<0.66){
 
 let flower=document.createElement("div")
 flower.className="flower"
@@ -273,19 +274,23 @@ flower.style.left=x+"px"
 flower.innerText="🌼"
 world.appendChild(flower)
 
+}else{
+
+let hill=document.createElement("div")
+hill.className="hill"
+hill.style.left=x+"px"
+world.appendChild(hill)
+
 }
 
 }
 
 function spawnObstacle(){
 
-let x=nextSpawn
-
 let obstacle=document.createElement("div")
 obstacle.className="obstacle"
-obstacle.style.left=x+"px"
+obstacle.style.left=nextSpawn+"px"
 obstacle.innerText="?"
-
 world.appendChild(obstacle)
 
 nextSpawn+=600
@@ -306,8 +311,8 @@ playerIdle.style.display="block"
 dogImg.src="dog-sit.png"
 }
 
-document.getElementById("left").onpointerdown=()=>{left=true}
-document.getElementById("left").onpointerup=()=>{left=false}
+document.getElementById("left").onpointerdown=()=>left=true
+document.getElementById("left").onpointerup=()=>left=false
 
 document.getElementById("jump").onpointerdown=()=>{
 if(onGround){
@@ -359,11 +364,10 @@ if(jump==2){
 clearInterval(interval)
 
 let text=document.createElement("div")
-text.innerText="Voff voff!"
+text.innerText="Voff!"
 text.style.position="absolute"
 text.style.bottom="160px"
-text.style.left="30%"
-text.style.fontWeight="bold"
+text.style.left=dog.offsetLeft+"px"
 
 document.body.appendChild(text)
 
@@ -382,13 +386,9 @@ paused=true
 let q
 
 if(wrongTasks.length>0 && Math.random()<.4){
-
 q=wrongTasks.shift()
-
 }else{
-
 q=tasks[taskIndex]
-
 }
 
 const parts=q.split("+")
@@ -433,12 +433,10 @@ wrongTasks.push(document.getElementById("question").innerText)
 function spawnFlag(){
 
 const flag=document.createElement("div")
-
 flag.style.position="absolute"
 flag.style.left=(nextSpawn+400)+"px"
 flag.style.bottom="80px"
 flag.style.fontSize="70px"
-
 flag.innerText="🏁"
 
 world.appendChild(flag)
@@ -468,14 +466,15 @@ onGround=true
 
 player.style.bottom=bottom+"px"
 
+const dog=document.getElementById("dog")
+dog.style.left=(player.offsetLeft-120)+"px"
+
 world.style.left=next+"px"
 worldX=next
 
 if(-worldX+window.innerWidth>nextSpawn-1000){
-
 spawnDecoration()
 spawnObstacle()
-
 }
 
 const pr=player.getBoundingClientRect()
@@ -501,6 +500,22 @@ requestAnimationFrame(loop)
 }
 
 loop()
+
+document.getElementById("photoInput").addEventListener("change",async e=>{
+
+const file=e.target.files[0]
+
+const result=await Tesseract.recognize(file,"eng")
+
+const text=result.data.text
+
+let found=text.match(/\d+\s*\+\s*\d+/g)
+
+if(found){
+tasks=found
+}
+
+})
 
 </script>
 
