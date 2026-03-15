@@ -45,28 +45,6 @@ width:200000px;
 background:#2ecc71;
 }
 
-.obstacle{
-position:absolute;
-bottom:80px;
-width:60px;
-height:60px;
-background:#8e44ad;
-border-radius:12px;
-display:flex;
-align-items:center;
-justify-content:center;
-color:white;
-font-weight:bold;
-}
-
-/* FLAGGA */
-
-.flag{
-position:absolute;
-bottom:80px;
-font-size:70px;
-}
-
 /* SPELARE */
 
 #player{
@@ -103,10 +81,66 @@ position:absolute;
 bottom:80px;
 left:30%;
 width:80px;
+transition:transform .2s;
 }
 
-#dog img{
-width:100%;
+#dog img{width:100%;}
+
+/* OBJEKT */
+
+.obstacle{
+position:absolute;
+bottom:80px;
+width:60px;
+height:60px;
+background:#8e44ad;
+border-radius:12px;
+display:flex;
+align-items:center;
+justify-content:center;
+color:white;
+font-weight:bold;
+}
+
+.coin{
+position:absolute;
+bottom:140px;
+font-size:30px;
+}
+
+.tree{
+position:absolute;
+bottom:80px;
+font-size:40px;
+}
+
+.flower{
+position:absolute;
+bottom:80px;
+font-size:24px;
+}
+
+.hedgehog{
+position:absolute;
+bottom:80px;
+font-size:30px;
+}
+
+.hill{
+position:absolute;
+bottom:80px;
+width:200px;
+height:120px;
+background:#27ae60;
+border-radius:200px 200px 0 0;
+}
+
+/* FLAGGA */
+
+.flag{
+position:absolute;
+bottom:80px;
+font-size:70px;
 }
 
 /* KONTROLLER */
@@ -180,26 +214,29 @@ border-radius:6px;
 
 /* BLINKHJÄLP */
 
-@keyframes blink {
-0% {box-shadow:0 0 0px rgba(0,0,0,0)}
-50% {box-shadow:0 0 10px 4px #22c55e}
-100% {box-shadow:0 0 0px rgba(0,0,0,0)}
+@keyframes blink{
+0%{box-shadow:0 0 0}
+50%{box-shadow:0 0 10px 4px #22c55e}
+100%{box-shadow:0 0 0}
 }
 
-@keyframes blinkBlue {
-0% {box-shadow:0 0 0px rgba(0,0,0,0)}
-50% {box-shadow:0 0 10px 4px #3b82f6}
-100% {box-shadow:0 0 0px rgba(0,0,0,0)}
+@keyframes blinkBlue{
+0%{box-shadow:0 0 0}
+50%{box-shadow:0 0 10px 4px #3b82f6}
+100%{box-shadow:0 0 0}
 }
 
 .hintOnes{animation:blink 1s infinite;}
 .hintTens{animation:blinkBlue 1s infinite;}
 
-/* FYRVERKERI */
-
 .fire{
 position:absolute;
 font-size:30px;
+}
+
+.voff{
+position:absolute;
+font-size:22px;
 }
 
 </style>
@@ -238,6 +275,8 @@ font-size:30px;
 
 <script>
 
+/* SPELVARIABLER */
+
 let worldX=0
 let moving=false
 let paused=false
@@ -249,24 +288,79 @@ let tasks=["39+15","63+28","58+34","37+45","44+17"]
 let taskIndex=0
 let correct=0
 let nextSpawn=600
+let coins=0
 
 const world=document.getElementById("world")
 const sprite=document.getElementById("playerSprite")
 const player=document.getElementById("player")
+const dog=document.getElementById("dog")
 
 generateWorld()
 
 function generateWorld(){
 
-for(let i=0;i<20;i++){
+for(let i=0;i<30;i++){
+
+spawnObstacle()
+spawnCoin()
+spawnDecoration()
+
+}
+
+}
+
+function spawnObstacle(){
 
 let o=document.createElement("div")
 o.className="obstacle"
 o.style.left=nextSpawn+"px"
 o.innerText="?"
+
 world.appendChild(o)
 
 nextSpawn+=600
+
+}
+
+function spawnCoin(){
+
+let c=document.createElement("div")
+c.className="coin"
+c.innerText="🪙"
+
+c.style.left=(nextSpawn-300)+"px"
+
+world.appendChild(c)
+
+}
+
+function spawnDecoration(){
+
+let r=Math.random()
+
+if(r<0.33){
+
+let t=document.createElement("div")
+t.className="tree"
+t.innerText="🌳"
+t.style.left=(nextSpawn-150)+"px"
+world.appendChild(t)
+
+}else if(r<0.66){
+
+let f=document.createElement("div")
+f.className="flower"
+f.innerText="🌼"
+f.style.left=(nextSpawn-200)+"px"
+world.appendChild(f)
+
+}else{
+
+let h=document.createElement("div")
+h.className="hedgehog"
+h.innerText="🦔"
+h.style.left=(nextSpawn-250)+"px"
+world.appendChild(h)
 
 }
 
@@ -284,7 +378,7 @@ moving=false
 sprite.classList.remove("walk")
 }
 
-/* VISA MATTE */
+/* MATTE */
 
 function showMath(){
 
@@ -302,8 +396,6 @@ buildGrid(a,b)
 math.style.display="flex"
 
 }
-
-/* BYGG UPPSTÄLLNING */
 
 function buildGrid(a,b){
 
@@ -365,8 +457,6 @@ tensInput.classList.add("hintTens")
 
 }
 
-/* KONTROLLERA SVAR */
-
 function check(){
 
 let nums=[...document.querySelectorAll(".answer")].map(i=>i.value).join("")
@@ -374,9 +464,7 @@ let val=parseInt(nums)
 
 if(val===correct){
 
-document.querySelectorAll(".answer").forEach(i=>i.classList.add("correct"))
-
-setTimeout(()=>{
+dogJump()
 
 taskIndex++
 progress.innerText=taskIndex+" / "+tasks.length
@@ -391,17 +479,29 @@ spawnFlag()
 
 }
 
-},400)
-
-}else{
-
-document.querySelectorAll(".answer").forEach(i=>i.classList.add("wrong"))
-
-setTimeout(()=>{
-document.querySelectorAll(".answer").forEach(i=>i.classList.remove("wrong"))
-},400)
+}
 
 }
+
+/* HUND FIRAR */
+
+function dogJump(){
+
+dog.style.transform="translateY(-40px)"
+
+setTimeout(()=>{
+dog.style.transform="translateY(0)"
+},200)
+
+let text=document.createElement("div")
+text.className="voff"
+text.innerText="Voff!"
+text.style.left=(dog.offsetLeft)+"px"
+text.style.bottom="200px"
+
+document.body.appendChild(text)
+
+setTimeout(()=>text.remove(),700)
 
 }
 
@@ -412,8 +512,7 @@ function spawnFlag(){
 let flag=document.createElement("div")
 flag.className="flag"
 
-let playerPos = -worldX + window.innerWidth*0.6
-
+let playerPos=-worldX+window.innerWidth*0.6
 flag.style.left=(playerPos+300)+"px"
 
 flag.innerText="🏁"
@@ -453,6 +552,8 @@ if(moving) worldX-=4
 
 world.style.left=worldX+"px"
 
+dog.style.left=(player.offsetLeft-100)+"px"
+
 const pr=player.getBoundingClientRect()
 
 document.querySelectorAll(".obstacle").forEach(o=>{
@@ -463,6 +564,19 @@ if(pr.right>r.left && pr.left<r.right){
 
 showMath()
 o.remove()
+
+}
+
+})
+
+document.querySelectorAll(".coin").forEach(c=>{
+
+const r=c.getBoundingClientRect()
+
+if(pr.right>r.left && pr.left<r.right){
+
+coins++
+c.remove()
 
 }
 
