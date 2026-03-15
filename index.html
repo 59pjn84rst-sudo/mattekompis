@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Mattekompis</title>
 
 <style>
@@ -58,6 +57,14 @@ align-items:center;
 justify-content:center;
 color:white;
 font-weight:bold;
+}
+
+/* FLAGGA */
+
+.flag{
+position:absolute;
+bottom:80px;
+font-size:70px;
 }
 
 /* SPELARE */
@@ -195,12 +202,6 @@ position:absolute;
 font-size:30px;
 }
 
-.flag{
-position:absolute;
-bottom:80px;
-font-size:70px;
-}
-
 </style>
 </head>
 
@@ -237,18 +238,16 @@ font-size:70px;
 
 <script>
 
-/* SPELVARIABLER */
-
 let worldX=0
 let moving=false
 let paused=false
 let finished=false
+let flagReached=false
 
 let tasks=["39+15","63+28","58+34","37+45","44+17"]
 
 let taskIndex=0
 let correct=0
-
 let nextSpawn=600
 
 const world=document.getElementById("world")
@@ -256,8 +255,6 @@ const sprite=document.getElementById("playerSprite")
 const player=document.getElementById("player")
 
 generateWorld()
-
-/* GENERERA BANA */
 
 function generateWorld(){
 
@@ -356,18 +353,14 @@ grid.appendChild(c)
 
 })
 
-/* BLINKHJÄLP */
-
 let onesInput=inputs[inputs.length-1]
 let tensInput=inputs[inputs.length-2]
 
 onesInput.classList.add("hintOnes")
 
 onesInput.addEventListener("input",()=>{
-
 onesInput.classList.remove("hintOnes")
 tensInput.classList.add("hintTens")
-
 })
 
 }
@@ -418,12 +411,14 @@ function spawnFlag(){
 
 let flag=document.createElement("div")
 flag.className="flag"
-flag.style.left=(nextSpawn+200)+"px"
+
+let playerPos = -worldX + window.innerWidth*0.6
+
+flag.style.left=(playerPos+300)+"px"
+
 flag.innerText="🏁"
 
 world.appendChild(flag)
-
-fireworks()
 
 }
 
@@ -468,6 +463,19 @@ if(pr.right>r.left && pr.left<r.right){
 
 showMath()
 o.remove()
+
+}
+
+})
+
+document.querySelectorAll(".flag").forEach(f=>{
+
+const r=f.getBoundingClientRect()
+
+if(pr.right>r.left && pr.left<r.right && !flagReached){
+
+flagReached=true
+fireworks()
 
 }
 
