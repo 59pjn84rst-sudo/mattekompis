@@ -2,11 +2,8 @@
 <html lang="sv">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Mattekompis</title>
-
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
 <style>
 
@@ -45,18 +42,6 @@ bottom:0;
 height:80px;
 width:200000px;
 background:#2ecc71;
-}
-
-.tree{position:absolute;bottom:80px;font-size:40px}
-.flower{position:absolute;bottom:80px;font-size:24px}
-
-.hill{
-position:absolute;
-bottom:80px;
-width:200px;
-height:120px;
-background:#27ae60;
-border-radius:200px 200px 0 0;
 }
 
 .obstacle{
@@ -107,7 +92,9 @@ left:30%;
 width:80px;
 }
 
-#dog img{width:100%}
+#dog img{
+width:100%;
+}
 
 #controls{
 display:flex;
@@ -168,14 +155,6 @@ padding:6px 10px;
 border-radius:6px;
 }
 
-#photo{
-position:absolute;
-top:10px;
-right:10px;
-background:white;
-padding:6px;
-}
-
 </style>
 </head>
 
@@ -184,8 +163,6 @@ padding:6px;
 <div id="game">
 
 <div id="progress">0 / 5</div>
-
-<input type="file" id="photo" accept="image/*">
 
 <div id="world">
 <div class="ground"></div>
@@ -202,7 +179,6 @@ padding:6px;
 </div>
 
 <div id="controls">
-<button id="left">⬅️</button>
 <button id="jump">⬆️</button>
 <button id="right">➡️</button>
 </div>
@@ -212,76 +188,27 @@ padding:6px;
 <button onclick="check()">Klar</button>
 </div>
 
-<audio id="correctSound" src="Correct.mp3"></audio>
-
 <script>
 
 let worldX=0
 let moving=false
-let vy=0
-let onGround=true
 let paused=false
 
 let tasks=["39+15","63+28","58+34","37+45","44+17"]
-
 let taskIndex=0
 let correct=0
-
-let nextSpawn=800
-let finished=false
+let nextSpawn=600
 
 const world=document.getElementById("world")
 const sprite=document.getElementById("playerSprite")
 const player=document.getElementById("player")
 const dog=document.getElementById("dog")
-const dogImg=document.getElementById("dogImg")
 
 generateWorld()
 
 function generateWorld(){
 
-for(let i=0;i<30;i++){
-
-spawnDecoration()
-spawnObstacle()
-
-}
-
-}
-
-function spawnDecoration(){
-
-let x=nextSpawn+Math.random()*300
-let r=Math.random()
-
-if(r<0.33){
-
-let t=document.createElement("div")
-t.className="tree"
-t.style.left=x+"px"
-t.innerText="🌳"
-world.appendChild(t)
-
-}else if(r<0.66){
-
-let f=document.createElement("div")
-f.className="flower"
-f.style.left=x+"px"
-f.innerText="🌼"
-world.appendChild(f)
-
-}else{
-
-let h=document.createElement("div")
-h.className="hill"
-h.style.left=x+"px"
-world.appendChild(h)
-
-}
-
-}
-
-function spawnObstacle(){
+for(let i=0;i<20;i++){
 
 let o=document.createElement("div")
 o.className="obstacle"
@@ -293,33 +220,23 @@ nextSpawn+=600
 
 }
 
+}
+
 right.onpointerdown=()=>{
 moving=true
 sprite.classList.add("walk")
-dogImg.src="dog-walk.png"
 }
 
 right.onpointerup=()=>{
 moving=false
 sprite.classList.remove("walk")
-dogImg.src="dog-sit.png"
-}
-
-jump.onpointerdown=()=>{
-if(onGround){
-vy=12
-onGround=false
-}
 }
 
 function showMath(){
 
-if(taskIndex>=tasks.length || finished) return
-
 paused=true
 
 let q=tasks[taskIndex]
-
 let [a,b]=q.split("+").map(Number)
 
 correct=a+b
@@ -337,9 +254,9 @@ const grid=document.getElementById("grid")
 grid.innerHTML=""
 
 const cells=[
+"","","",
 "",Math.floor(a/10),a%10,
 "+",Math.floor(b/10),b%10,
-"","","",
 "i","i",""
 ]
 
@@ -369,14 +286,9 @@ grid.appendChild(c)
 function check(){
 
 let nums=[...document.querySelectorAll("input")].map(i=>i.value).join("")
-
 let val=parseInt(nums)
 
 if(val===correct){
-
-correctSound.play()
-
-dogJump()
 
 taskIndex++
 
@@ -386,53 +298,7 @@ math.style.display="none"
 
 paused=false
 
-if(taskIndex>=tasks.length){
-
-finished=true
-spawnFlag()
-
 }
-
-}
-
-}
-
-function dogJump(){
-
-dog.style.transition="transform .2s"
-
-dog.style.transform="translateY(-20px)"
-
-setTimeout(()=>{
-dog.style.transform="translateY(0px)"
-},200)
-
-let text=document.createElement("div")
-
-text.innerText="Voff!"
-
-text.style.position="absolute"
-text.style.left=dog.offsetLeft+"px"
-text.style.bottom="180px"
-
-document.body.appendChild(text)
-
-setTimeout(()=>text.remove(),800)
-
-}
-
-function spawnFlag(){
-
-let flag=document.createElement("div")
-
-flag.style.position="absolute"
-flag.style.left=(nextSpawn+200)+"px"
-flag.style.bottom="80px"
-flag.style.fontSize="70px"
-
-flag.innerText="🏁"
-
-world.appendChild(flag)
 
 }
 
@@ -442,30 +308,9 @@ if(!paused){
 
 if(moving) worldX-=4
 
-vy-=0.6
-
-let bottom=parseFloat(player.style.bottom||80)
-bottom+=vy
-
-if(bottom<=80){
-bottom=80
-vy=0
-onGround=true
-}
-
-player.style.bottom=bottom+"px"
-
-dog.style.left=(player.offsetLeft-100)+"px"
-
 world.style.left=worldX+"px"
 
-if(-worldX+window.innerWidth>nextSpawn-1000){
-
-spawnDecoration()
-
-if(!finished) spawnObstacle()
-
-}
+dog.style.left=(player.offsetLeft-90)+"px"
 
 const pr=player.getBoundingClientRect()
 
@@ -490,19 +335,6 @@ requestAnimationFrame(loop)
 
 loop()
 
-document.getElementById("photo").addEventListener("change",async e=>{
-
-const file=e.target.files[0]
-
-const result=await Tesseract.recognize(file,"eng")
-
-let found=result.data.text.match(/\d+\s*\+\s*\d+/g)
-
-if(found) tasks=found
-
-})
-
 </script>
-
 </body>
 </html>
