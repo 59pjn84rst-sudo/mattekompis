@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Mattekompis</title>
 
 <style>
@@ -181,7 +180,7 @@ padding:6px 10px;
 border-radius:6px;
 }
 
-/* FIRANDE */
+/* FYRVERKERI */
 
 .fire{
 position:absolute;
@@ -242,9 +241,9 @@ const world=document.getElementById("world")
 const sprite=document.getElementById("playerSprite")
 const player=document.getElementById("player")
 
-/* GENERERA BANA */
-
 generateWorld()
+
+/* GENERERA BANA */
 
 function generateWorld(){
 
@@ -274,7 +273,7 @@ moving=false
 sprite.classList.remove("walk")
 }
 
-/* MATTE */
+/* VISA MATTE */
 
 function showMath(){
 
@@ -283,7 +282,6 @@ if(finished) return
 paused=true
 
 let q=tasks[taskIndex]
-
 let [a,b]=q.split("+").map(Number)
 
 correct=a+b
@@ -310,7 +308,7 @@ const cells=[
 "", "", "",
 "", aT, aO,
 "+", bT, bO,
-"", "i", "i"
+"", "", ""
 ]
 
 cells.forEach((v,i)=>{
@@ -321,12 +319,11 @@ c.className="cell"
 if(i===5||i===8)c.classList.add("green")
 if(i===4||i===7)c.classList.add("blue")
 
-if(v==="i"){
+if(v===""){
 
 let inp=document.createElement("input")
 inp.maxLength=1
 inp.inputMode="numeric"
-
 c.appendChild(inp)
 
 }else{
@@ -451,5 +448,6 @@ requestAnimationFrame(loop)
 loop()
 
 </script>
+
 </body>
 </html>
