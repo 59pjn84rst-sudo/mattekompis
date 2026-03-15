@@ -342,19 +342,31 @@ math.style.display="flex"
 
 function check(){
 
-let v=parseInt(answer.value)
+const value = parseInt(document.getElementById("answer").value)
 
-if(v===correct){
+if(value === correct){
 
-correctSound.play()
+document.getElementById("correctSound").play()
 
-math.style.display="none"
+document.getElementById("math").style.display="none"
 
 taskIndex++
 
-progress.innerText=taskIndex+" / "+tasks.length
+document.getElementById("progress").innerText =
+taskIndex + " / " + tasks.length
+
+document.getElementById("answer").value=""
 
 paused=false
+
+}else{
+
+// visuell feedback
+document.getElementById("answer").style.background="#ffd6d6"
+
+setTimeout(()=>{
+document.getElementById("answer").style.background="white"
+},500)
 
 }
 
