@@ -3,10 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-
 <title>Mattekompis</title>
-
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
 <style>
 
@@ -14,6 +11,7 @@
 user-select:none;
 -webkit-user-select:none;
 -webkit-touch-callout:none;
+box-sizing:border-box;
 }
 
 body{
@@ -21,6 +19,11 @@ margin:0;
 overflow:hidden;
 font-family:sans-serif;
 background:#7ecbff;
+}
+
+button{
+-webkit-tap-highlight-color:transparent;
+touch-action:manipulation;
 }
 
 #start{
@@ -41,17 +44,91 @@ background:linear-gradient(#7ecbff,#c8f6ff);
 overflow:hidden;
 }
 
-canvas{
+#world{
 position:absolute;
 bottom:0;
 left:0;
+height:100%;
+width:200000px;
+}
+
+.ground{
+position:absolute;
+bottom:0;
+height:80px;
+width:200000px;
+background:#2ecc71;
+}
+
+.tree{position:absolute;bottom:80px;font-size:40px}
+.flower{position:absolute;bottom:80px;font-size:24px}
+
+.hill{
+position:absolute;
+bottom:80px;
+width:200px;
+height:100px;
+background:#27ae60;
+border-radius:200px 200px 0 0;
+}
+
+.obstacle{
+position:absolute;
+bottom:80px;
+width:60px;
+height:60px;
+background:#8e44ad;
+border-radius:12px;
+display:flex;
+align-items:center;
+justify-content:center;
+color:white;
+font-weight:bold;
+}
+
+#player{
+position:absolute;
+bottom:80px;
+left:40%;
+width:120px;
+height:120px;
+}
+
+#playerSprite{
+width:120px;
+height:120px;
+background:url("player-idle.PNG");
+background-size:contain;
+background-repeat:no-repeat;
+}
+
+.walk{
+background:url("player-walk.PNG");
+background-size:auto 120px;
+animation:walk .6s steps(6) infinite;
+}
+
+@keyframes walk{
+from{background-position:0}
+to{background-position:-720px}
+}
+
+#dog{
+position:absolute;
+bottom:80px;
+left:30%;
+width:80px;
+}
+
+#dog img{
+width:100%;
 }
 
 #controls{
 display:flex;
 justify-content:center;
 gap:30px;
-padding:20px;
+padding:15px;
 background:#1c2e4a;
 }
 
@@ -75,30 +152,24 @@ justify-content:center;
 
 #mathBox{
 background:white;
-padding:20px;
+padding:25px;
 border-radius:10px;
-}
-
-.grid{
-display:grid;
-grid-template-columns:60px 60px 60px;
-grid-template-rows:60px 60px 60px 60px;
-}
-
-.cell{
-border:2px solid black;
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:30px;
+text-align:center;
 }
 
 input{
-width:100%;
-height:100%;
-font-size:30px;
+font-size:28px;
+width:120px;
 text-align:center;
-border:none;
+}
+
+#progress{
+position:absolute;
+top:10px;
+left:10px;
+background:white;
+padding:6px 10px;
+border-radius:6px;
 }
 
 </style>
@@ -109,16 +180,27 @@ border:none;
 <div id="start">
 
 <h1>Mattekompis</h1>
-
 <button onclick="startGame()">Starta</button>
-
-<input type="file" id="photo">
 
 </div>
 
 <div id="game">
 
-<canvas id="world"></canvas>
+<div id="progress">0 / 5</div>
+
+<div id="world">
+
+<div class="ground"></div>
+
+</div>
+
+<div id="player">
+<div id="playerSprite"></div>
+</div>
+
+<div id="dog">
+<img id="dogImg" src="dog-sit.png">
+</div>
 
 </div>
 
@@ -134,7 +216,11 @@ border:none;
 
 <div id="mathBox">
 
-<div id="grid" class="grid"></div>
+<h2 id="question"></h2>
+
+<input id="answer">
+
+<br><br>
 
 <button onclick="check()">Klar</button>
 
@@ -142,32 +228,29 @@ border:none;
 
 </div>
 
+<audio id="correctSound" src="Correct.mp3"></audio>
+
 <script>
 
-const canvas=document.getElementById("world")
-const ctx=canvas.getContext("2d")
-
-canvas.width=window.innerWidth
-canvas.height=window.innerHeight*0.6
-
-let player={
-x:200,
-y:0,
-vy:0,
-width:60,
-height:80
-}
-
-let gravity=0.8
-let speed=5
-let jumpPower=14
-
-let ground=300
-
-let hills=[]
-let obstacles=[]
-
+let worldX=0
 let moving=false
+let vy=0
+let onGround=true
+let paused=false
+
+let tasks=["39+15","63+28","58+34","37+45","44+17"]
+
+let taskIndex=0
+let correct=0
+
+let nextSpawn=800
+let finished=false
+
+const world=document.getElementById("world")
+const sprite=document.getElementById("playerSprite")
+const player=document.getElementById("player")
+const dog=document.getElementById("dog")
+const dogImg=document.getElementById("dogImg")
 
 function startGame(){
 
@@ -175,38 +258,161 @@ document.getElementById("start").style.display="none"
 
 generateWorld()
 
-loop()
-
 }
 
 function generateWorld(){
 
-for(let i=0;i<20;i++){
+for(let i=0;i<30;i++){
 
-hills.push({
-x:i*400+300,
-width:200,
-height:100
-})
-
-obstacles.push({
-x:i*400+500,
-y:ground-60
-})
+spawnDecoration()
+spawnObstacle()
 
 }
 
 }
 
-function physics(){
+function spawnDecoration(){
 
-player.vy+=gravity
-player.y+=player.vy
+let x=nextSpawn+Math.random()*300
+let r=Math.random()
 
-if(player.y>ground-player.height){
+if(r<0.33){
 
-player.y=ground-player.height
-player.vy=0
+let t=document.createElement("div")
+t.className="tree"
+t.style.left=x+"px"
+t.innerText="🌳"
+world.appendChild(t)
+
+}else if(r<0.66){
+
+let f=document.createElement("div")
+f.className="flower"
+f.style.left=x+"px"
+f.innerText="🌼"
+world.appendChild(f)
+
+}else{
+
+let h=document.createElement("div")
+h.className="hill"
+h.style.left=x+"px"
+world.appendChild(h)
+
+}
+
+}
+
+function spawnObstacle(){
+
+let o=document.createElement("div")
+o.className="obstacle"
+o.style.left=nextSpawn+"px"
+o.innerText="?"
+world.appendChild(o)
+
+nextSpawn+=600
+
+}
+
+right.onpointerdown=()=>{
+moving=true
+sprite.classList.add("walk")
+dogImg.src="dog-walk.png"
+}
+
+right.onpointerup=()=>{
+moving=false
+sprite.classList.remove("walk")
+dogImg.src="dog-sit.png"
+}
+
+jump.onpointerdown=()=>{
+if(onGround){
+vy=12
+onGround=false
+}
+}
+
+function showMath(){
+
+if(taskIndex>=tasks.length || finished) return
+
+paused=true
+
+let q=tasks[taskIndex]
+
+let p=q.split("+")
+correct=parseInt(p[0])+parseInt(p[1])
+
+question.innerText=q
+
+math.style.display="flex"
+
+answer.focus()
+
+}
+
+function check(){
+
+let v=parseInt(answer.value)
+
+if(v===correct){
+
+correctSound.play()
+
+taskIndex++
+
+progress.innerText=taskIndex+" / "+tasks.length
+
+answer.value=""
+
+math.style.display="none"
+
+paused=false
+
+if(taskIndex>=tasks.length){
+
+finished=true
+spawnFlag()
+
+}
+
+}
+
+}
+
+function spawnFlag(){
+
+let flag=document.createElement("div")
+
+flag.style.position="absolute"
+flag.style.left=(nextSpawn+200)+"px"
+flag.style.bottom="80px"
+flag.style.fontSize="70px"
+
+flag.innerText="🏁"
+
+world.appendChild(flag)
+
+fireworks()
+
+}
+
+function fireworks(){
+
+for(let i=0;i<25;i++){
+
+let star=document.createElement("div")
+
+star.innerText="✨"
+star.style.position="absolute"
+star.style.left=(window.innerWidth/2 + Math.random()*300-150)+"px"
+star.style.top=(window.innerHeight/2 + Math.random()*200-100)+"px"
+
+document.body.appendChild(star)
+
+setTimeout(()=>star.remove(),800)
 
 }
 
@@ -214,128 +420,57 @@ player.vy=0
 
 function loop(){
 
-ctx.clearRect(0,0,canvas.width,canvas.height)
+if(!paused){
 
-physics()
+if(moving) worldX-=4
 
-ctx.fillStyle="#27ae60"
+vy-=0.6
 
-ctx.fillRect(0,ground,canvas.width,100)
+let bottom=parseFloat(player.style.bottom||80)
+bottom+=vy
 
-hills.forEach(h=>{
+if(bottom<=80){
+bottom=80
+vy=0
+onGround=true
+}
 
-ctx.beginPath()
-ctx.arc(h.x,ground,100,Math.PI,0)
-ctx.fill()
+player.style.bottom=bottom+"px"
+
+dog.style.left=(player.offsetLeft-100)+"px"
+
+world.style.left=worldX+"px"
+
+if(-worldX+window.innerWidth>nextSpawn-1000){
+
+spawnDecoration()
+
+if(!finished) spawnObstacle()
+
+}
+
+const pr=player.getBoundingClientRect()
+
+document.querySelectorAll(".obstacle").forEach(o=>{
+
+const r=o.getBoundingClientRect()
+
+if(pr.right>r.left && pr.left<r.right){
+
+showMath()
+o.remove()
+
+}
 
 })
 
-ctx.fillStyle="purple"
-
-obstacles.forEach(o=>{
-
-ctx.fillRect(o.x,ground-60,60,60)
-
-})
-
-ctx.fillStyle="orange"
-
-ctx.fillRect(player.x,player.y,player.width,player.height)
+}
 
 requestAnimationFrame(loop)
 
 }
 
-jump.onclick=()=>{
-player.vy=-jumpPower
-}
-
-right.onpointerdown=()=>moving=true
-right.onpointerup=()=>moving=false
-
-setInterval(()=>{
-
-if(moving){
-
-player.x+=speed
-
-}
-
-},16)
-
-function showMath(){
-
-document.getElementById("math").style.display="flex"
-
-buildGrid(34,27)
-
-}
-
-function buildGrid(a,b){
-
-const grid=document.getElementById("grid")
-
-grid.innerHTML=""
-
-const a1=Math.floor(a/10)
-const a2=a%10
-
-const b1=Math.floor(b/10)
-const b2=b%10
-
-const cells=[
-"",
-a1,
-a2,
-"+",
-b1,
-b2,
-"",
-"",
-"",
-"",
-"i",
-"i"
-]
-
-cells.forEach(v=>{
-
-const c=document.createElement("div")
-c.className="cell"
-
-if(v==="i"){
-
-const input=document.createElement("input")
-input.maxLength=1
-c.appendChild(input)
-
-}else{
-
-c.textContent=v
-
-}
-
-grid.appendChild(c)
-
-})
-
-}
-
-function check(){
-
-document.getElementById("math").style.display="none"
-
-}
-
-document.getElementById("photo").addEventListener("change",async e=>{
-
-const file=e.target.files[0]
-
-const res=await Tesseract.recognize(file,"eng")
-
-console.log(res.data.text)
-
-})
+loop()
 
 </script>
 
