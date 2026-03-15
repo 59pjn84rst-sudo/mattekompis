@@ -6,13 +6,14 @@
 
 <title>Mattekompis</title>
 
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
 <style>
 
 *{
--webkit-user-select:none;
 user-select:none;
+-webkit-user-select:none;
 -webkit-touch-callout:none;
-box-sizing:border-box;
 }
 
 body{
@@ -22,12 +23,7 @@ font-family:sans-serif;
 background:#7ecbff;
 }
 
-button{
--webkit-tap-highlight-color:transparent;
-touch-action:manipulation;
-}
-
-#startScreen{
+#start{
 position:fixed;
 inset:0;
 display:flex;
@@ -35,7 +31,7 @@ flex-direction:column;
 align-items:center;
 justify-content:center;
 background:#7ecbff;
-gap:15px;
+gap:20px;
 }
 
 #game{
@@ -45,91 +41,17 @@ background:linear-gradient(#7ecbff,#c8f6ff);
 overflow:hidden;
 }
 
-#world{
+canvas{
 position:absolute;
 bottom:0;
 left:0;
-height:100%;
-width:200000px;
-}
-
-.ground{
-position:absolute;
-bottom:0;
-height:80px;
-width:200000px;
-background:#2ecc71;
-}
-
-.tree{position:absolute;bottom:80px;font-size:50px;}
-.flower{position:absolute;bottom:80px;font-size:24px;}
-
-.hill{
-position:absolute;
-bottom:80px;
-width:240px;
-height:120px;
-background:#27ae60;
-border-radius:240px 240px 0 0;
-}
-
-.obstacle{
-position:absolute;
-bottom:80px;
-width:60px;
-height:60px;
-background:#8e44ad;
-border-radius:12px;
-display:flex;
-align-items:center;
-justify-content:center;
-color:white;
-font-weight:bold;
-}
-
-#player{
-position:absolute;
-bottom:80px;
-left:40%;
-width:140px;
-height:140px;
-}
-
-#playerSprite{
-width:140px;
-height:140px;
-background:url("player-idle.PNG");
-background-size:contain;
-background-repeat:no-repeat;
-}
-
-.walk{
-background:url("player-walk.PNG");
-background-size:auto 140px;
-animation:walk .6s steps(6) infinite;
-}
-
-@keyframes walk{
-from{background-position:0}
-to{background-position:-840px}
-}
-
-#dog{
-position:absolute;
-bottom:80px;
-left:30%;
-width:90px;
-}
-
-#dog img{
-width:100%;
 }
 
 #controls{
 display:flex;
 justify-content:center;
 gap:30px;
-padding:15px;
+padding:20px;
 background:#1c2e4a;
 }
 
@@ -153,24 +75,30 @@ justify-content:center;
 
 #mathBox{
 background:white;
-padding:30px;
-border-radius:12px;
-text-align:center;
+padding:20px;
+border-radius:10px;
+}
+
+.grid{
+display:grid;
+grid-template-columns:60px 60px 60px;
+grid-template-rows:60px 60px 60px 60px;
+}
+
+.cell{
+border:2px solid black;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:30px;
 }
 
 input{
+width:100%;
+height:100%;
 font-size:30px;
-width:120px;
 text-align:center;
-}
-
-#progress{
-position:absolute;
-top:10px;
-left:10px;
-background:white;
-padding:6px 10px;
-border-radius:6px;
+border:none;
 }
 
 </style>
@@ -178,202 +106,107 @@ border-radius:6px;
 
 <body>
 
-<div id="startScreen">
-<img src="icon.PNG" width="160">
+<div id="start">
+
 <h1>Mattekompis</h1>
+
 <button onclick="startGame()">Starta</button>
+
+<input type="file" id="photo">
+
 </div>
 
 <div id="game">
 
-<div id="progress">0 / 5</div>
-
-<div id="world">
-<div class="ground"></div>
-</div>
-
-<div id="player">
-<div id="playerSprite"></div>
-</div>
-
-<div id="dog">
-<img id="dogImg" src="dog-sit.png">
-</div>
+<canvas id="world"></canvas>
 
 </div>
 
 <div id="controls">
+
 <button id="left">⬅️</button>
 <button id="jump">⬆️</button>
 <button id="right">➡️</button>
+
 </div>
 
 <div id="math">
+
 <div id="mathBox">
-<h2 id="question"></h2>
-<input id="answer">
-<script>
-answer.addEventListener("keydown",e=>{
-if(e.key==="Enter") check()
-})
-</script>
-<br><br>
+
+<div id="grid" class="grid"></div>
+
 <button onclick="check()">Klar</button>
-</div>
+
 </div>
 
-<audio id="music" src="Music.mp3" loop></audio>
-<audio id="jumpSound" src="Jump.mp3"></audio>
-<audio id="correctSound" src="Correct.mp3"></audio>
+</div>
 
 <script>
 
-let worldX=0
+const canvas=document.getElementById("world")
+const ctx=canvas.getContext("2d")
+
+canvas.width=window.innerWidth
+canvas.height=window.innerHeight*0.6
+
+let player={
+x:200,
+y:0,
+vy:0,
+width:60,
+height:80
+}
+
+let gravity=0.8
+let speed=5
+let jumpPower=14
+
+let ground=300
+
+let hills=[]
+let obstacles=[]
+
 let moving=false
-let vy=0
-let onGround=true
-let paused=false
-
-let tasks=["39+15","63+28","58+34","37+45","44+17"]
-
-let taskIndex=0
-let correct=0
-
-let nextSpawn=800
-
-const world=document.getElementById("world")
-const player=document.getElementById("player")
-const sprite=document.getElementById("playerSprite")
-const dog=document.getElementById("dog")
-const dogImg=document.getElementById("dogImg")
 
 function startGame(){
 
-document.getElementById("startScreen").style.display="none"
-
-music.volume=.3
-music.play()
+document.getElementById("start").style.display="none"
 
 generateWorld()
+
+loop()
 
 }
 
 function generateWorld(){
 
-for(let i=0;i<40;i++){
-spawnDecoration()
-spawnObstacle()
-}
+for(let i=0;i<20;i++){
 
-}
+hills.push({
+x:i*400+300,
+width:200,
+height:100
+})
 
-function spawnDecoration(){
-
-let x=nextSpawn+Math.random()*300
-let r=Math.random()
-
-if(r<0.33){
-
-let t=document.createElement("div")
-t.className="tree"
-t.style.left=x+"px"
-t.innerText="🌳"
-world.appendChild(t)
-
-}else if(r<0.66){
-
-let f=document.createElement("div")
-f.className="flower"
-f.style.left=x+"px"
-f.innerText="🌼"
-world.appendChild(f)
-
-}else{
-
-let h=document.createElement("div")
-h.className="hill"
-h.style.left=x+"px"
-world.appendChild(h)
+obstacles.push({
+x:i*400+500,
+y:ground-60
+})
 
 }
 
 }
 
-function spawnObstacle(){
+function physics(){
 
-let o=document.createElement("div")
-o.className="obstacle"
-o.style.left=nextSpawn+"px"
-o.innerText="?"
-world.appendChild(o)
+player.vy+=gravity
+player.y+=player.vy
 
-nextSpawn+=600
+if(player.y>ground-player.height){
 
-}
-
-right.onpointerdown=()=>{
-moving=true
-sprite.classList.add("walk")
-dogImg.src="dog-walk.png"
-}
-
-right.onpointerup=()=>{
-moving=false
-sprite.classList.remove("walk")
-dogImg.src="dog-sit.png"
-}
-
-jump.onpointerdown=()=>{
-if(onGround){
-vy=12
-onGround=false
-jumpSound.play()
-}
-}
-
-function showMath(){setTimeout(()=>{
-document.getElementById("answer").focus()
-},100)
-
-paused=true
-
-let q=tasks[taskIndex]
-
-let p=q.split("+")
-correct=parseInt(p[0])+parseInt(p[1])
-
-question.innerText=q
-math.style.display="flex"
-
-}
-
-function check(){
-
-const value = parseInt(document.getElementById("answer").value)
-
-if(value === correct){
-
-document.getElementById("correctSound").play()
-
-document.getElementById("math").style.display="none"
-
-taskIndex++
-
-document.getElementById("progress").innerText =
-taskIndex + " / " + tasks.length
-
-document.getElementById("answer").value=""
-
-paused=false
-
-}else{
-
-// visuell feedback
-document.getElementById("answer").style.background="#ffd6d6"
-
-setTimeout(()=>{
-document.getElementById("answer").style.background="white"
-},500)
+player.y=ground-player.height
+player.vy=0
 
 }
 
@@ -381,56 +214,128 @@ document.getElementById("answer").style.background="white"
 
 function loop(){
 
-if(!paused){
+ctx.clearRect(0,0,canvas.width,canvas.height)
 
-if(moving) worldX-=4
+physics()
 
-vy-=0.6
+ctx.fillStyle="#27ae60"
 
-let bottom=parseFloat(player.style.bottom||80)
-bottom+=vy
+ctx.fillRect(0,ground,canvas.width,100)
 
-if(bottom<=80){
-bottom=80
-vy=0
-onGround=true
-}
+hills.forEach(h=>{
 
-player.style.bottom=bottom+"px"
-
-dog.style.left=(player.offsetLeft-120)+"px"
-
-world.style.left=worldX+"px"
-
-if(-worldX+window.innerWidth>nextSpawn-1000){
-
-spawnDecoration()
-spawnObstacle()
-
-}
-
-const pr=player.getBoundingClientRect()
-
-document.querySelectorAll(".obstacle").forEach(o=>{
-
-const r=o.getBoundingClientRect()
-
-if(pr.right>r.left && pr.left<r.right){
-
-showMath()
-o.remove()
-
-}
+ctx.beginPath()
+ctx.arc(h.x,ground,100,Math.PI,0)
+ctx.fill()
 
 })
 
-}
+ctx.fillStyle="purple"
+
+obstacles.forEach(o=>{
+
+ctx.fillRect(o.x,ground-60,60,60)
+
+})
+
+ctx.fillStyle="orange"
+
+ctx.fillRect(player.x,player.y,player.width,player.height)
 
 requestAnimationFrame(loop)
 
 }
 
-loop()
+jump.onclick=()=>{
+player.vy=-jumpPower
+}
+
+right.onpointerdown=()=>moving=true
+right.onpointerup=()=>moving=false
+
+setInterval(()=>{
+
+if(moving){
+
+player.x+=speed
+
+}
+
+},16)
+
+function showMath(){
+
+document.getElementById("math").style.display="flex"
+
+buildGrid(34,27)
+
+}
+
+function buildGrid(a,b){
+
+const grid=document.getElementById("grid")
+
+grid.innerHTML=""
+
+const a1=Math.floor(a/10)
+const a2=a%10
+
+const b1=Math.floor(b/10)
+const b2=b%10
+
+const cells=[
+"",
+a1,
+a2,
+"+",
+b1,
+b2,
+"",
+"",
+"",
+"",
+"i",
+"i"
+]
+
+cells.forEach(v=>{
+
+const c=document.createElement("div")
+c.className="cell"
+
+if(v==="i"){
+
+const input=document.createElement("input")
+input.maxLength=1
+c.appendChild(input)
+
+}else{
+
+c.textContent=v
+
+}
+
+grid.appendChild(c)
+
+})
+
+}
+
+function check(){
+
+document.getElementById("math").style.display="none"
+
+}
+
+document.getElementById("photo").addEventListener("change",async e=>{
+
+const file=e.target.files[0]
+
+const res=await Tesseract.recognize(file,"eng")
+
+console.log(res.data.text)
+
+})
 
 </script>
 
