@@ -2,7 +2,7 @@
 <html lang="sv">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mattekompis</title>
 
 <style>
@@ -21,25 +21,9 @@ font-family:sans-serif;
 background:#7ecbff;
 }
 
-button{
--webkit-tap-highlight-color:transparent;
-touch-action:manipulation;
-}
-
-#start{
-position:fixed;
-inset:0;
-display:flex;
-flex-direction:column;
-align-items:center;
-justify-content:center;
-background:#7ecbff;
-gap:20px;
-}
-
 #game{
 position:relative;
-height:60vh;
+height:65vh;
 background:linear-gradient(#7ecbff,#c8f6ff);
 overflow:hidden;
 }
@@ -90,13 +74,13 @@ font-weight:bold;
 position:absolute;
 bottom:80px;
 left:40%;
-width:120px;
-height:120px;
+width:110px;
+height:110px;
 }
 
 #playerSprite{
-width:120px;
-height:120px;
+width:110px;
+height:110px;
 background:url("player-idle.PNG");
 background-size:contain;
 background-repeat:no-repeat;
@@ -104,13 +88,13 @@ background-repeat:no-repeat;
 
 .walk{
 background:url("player-walk.PNG");
-background-size:auto 120px;
+background-size:auto 110px;
 animation:walk .6s steps(6) infinite;
 }
 
 @keyframes walk{
 from{background-position:0}
-to{background-position:-720px}
+to{background-position:-660px}
 }
 
 #dog{
@@ -133,7 +117,7 @@ background:#1c2e4a;
 }
 
 button{
-font-size:30px;
+font-size:28px;
 padding:15px 20px;
 border-radius:12px;
 border:none;
@@ -177,21 +161,12 @@ border-radius:6px;
 
 <body>
 
-<div id="start">
-
-<h1>Mattekompis</h1>
-<button onclick="startGame()">Starta</button>
-
-</div>
-
 <div id="game">
 
 <div id="progress">0 / 5</div>
 
 <div id="world">
-
 <div class="ground"></div>
-
 </div>
 
 <div id="player">
@@ -205,15 +180,12 @@ border-radius:6px;
 </div>
 
 <div id="controls">
-
 <button id="left">⬅️</button>
 <button id="jump">⬆️</button>
 <button id="right">➡️</button>
-
 </div>
 
 <div id="math">
-
 <div id="mathBox">
 
 <h2 id="question"></h2>
@@ -225,7 +197,6 @@ border-radius:6px;
 <button onclick="check()">Klar</button>
 
 </div>
-
 </div>
 
 <audio id="correctSound" src="Correct.mp3"></audio>
@@ -252,13 +223,7 @@ const player=document.getElementById("player")
 const dog=document.getElementById("dog")
 const dogImg=document.getElementById("dogImg")
 
-function startGame(){
-
-document.getElementById("start").style.display="none"
-
 generateWorld()
-
-}
 
 function generateWorld(){
 
@@ -394,27 +359,6 @@ flag.style.fontSize="70px"
 flag.innerText="🏁"
 
 world.appendChild(flag)
-
-fireworks()
-
-}
-
-function fireworks(){
-
-for(let i=0;i<25;i++){
-
-let star=document.createElement("div")
-
-star.innerText="✨"
-star.style.position="absolute"
-star.style.left=(window.innerWidth/2 + Math.random()*300-150)+"px"
-star.style.top=(window.innerHeight/2 + Math.random()*200-100)+"px"
-
-document.body.appendChild(star)
-
-setTimeout(()=>star.remove(),800)
-
-}
 
 }
 
