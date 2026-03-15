@@ -3,7 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Mattekompis</title>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
 <style>
 
@@ -51,7 +54,7 @@ background:#2ecc71;
 position:absolute;
 bottom:80px;
 width:200px;
-height:100px;
+height:120px;
 background:#27ae60;
 border-radius:200px 200px 0 0;
 }
@@ -104,9 +107,7 @@ left:30%;
 width:80px;
 }
 
-#dog img{
-width:100%;
-}
+#dog img{width:100%}
 
 #controls{
 display:flex;
@@ -134,16 +135,27 @@ align-items:center;
 justify-content:center;
 }
 
-#mathBox{
+.grid{
+display:grid;
+grid-template-columns:60px 60px 60px;
+grid-template-rows:60px 60px 60px 60px;
 background:white;
-padding:25px;
-border-radius:10px;
-text-align:center;
+padding:10px;
+}
+
+.cell{
+border:2px solid black;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:28px;
 }
 
 input{
+width:100%;
+height:100%;
+border:none;
 font-size:28px;
-width:120px;
 text-align:center;
 }
 
@@ -156,6 +168,14 @@ padding:6px 10px;
 border-radius:6px;
 }
 
+#photo{
+position:absolute;
+top:10px;
+right:10px;
+background:white;
+padding:6px;
+}
+
 </style>
 </head>
 
@@ -164,6 +184,8 @@ border-radius:6px;
 <div id="game">
 
 <div id="progress">0 / 5</div>
+
+<input type="file" id="photo" accept="image/*">
 
 <div id="world">
 <div class="ground"></div>
@@ -186,17 +208,8 @@ border-radius:6px;
 </div>
 
 <div id="math">
-<div id="mathBox">
-
-<h2 id="question"></h2>
-
-<input id="answer">
-
-<br><br>
-
+<div class="grid" id="grid"></div>
 <button onclick="check()">Klar</button>
-
-</div>
 </div>
 
 <audio id="correctSound" src="Correct.mp3"></audio>
@@ -307,30 +320,67 @@ paused=true
 
 let q=tasks[taskIndex]
 
-let p=q.split("+")
-correct=parseInt(p[0])+parseInt(p[1])
+let [a,b]=q.split("+").map(Number)
 
-question.innerText=q
+correct=a+b
+
+buildGrid(a,b)
 
 math.style.display="flex"
 
-answer.focus()
+}
+
+function buildGrid(a,b){
+
+const grid=document.getElementById("grid")
+
+grid.innerHTML=""
+
+const cells=[
+"",Math.floor(a/10),a%10,
+"+",Math.floor(b/10),b%10,
+"","","",
+"i","i",""
+]
+
+cells.forEach(v=>{
+
+let c=document.createElement("div")
+c.className="cell"
+
+if(v==="i"){
+
+let inp=document.createElement("input")
+inp.maxLength=1
+c.appendChild(inp)
+
+}else{
+
+c.textContent=v
+
+}
+
+grid.appendChild(c)
+
+})
 
 }
 
 function check(){
 
-let v=parseInt(answer.value)
+let nums=[...document.querySelectorAll("input")].map(i=>i.value).join("")
 
-if(v===correct){
+let val=parseInt(nums)
+
+if(val===correct){
 
 correctSound.play()
+
+dogJump()
 
 taskIndex++
 
 progress.innerText=taskIndex+" / "+tasks.length
-
-answer.value=""
 
 math.style.display="none"
 
@@ -344,6 +394,30 @@ spawnFlag()
 }
 
 }
+
+}
+
+function dogJump(){
+
+dog.style.transition="transform .2s"
+
+dog.style.transform="translateY(-20px)"
+
+setTimeout(()=>{
+dog.style.transform="translateY(0px)"
+},200)
+
+let text=document.createElement("div")
+
+text.innerText="Voff!"
+
+text.style.position="absolute"
+text.style.left=dog.offsetLeft+"px"
+text.style.bottom="180px"
+
+document.body.appendChild(text)
+
+setTimeout(()=>text.remove(),800)
 
 }
 
@@ -415,6 +489,18 @@ requestAnimationFrame(loop)
 }
 
 loop()
+
+document.getElementById("photo").addEventListener("change",async e=>{
+
+const file=e.target.files[0]
+
+const result=await Tesseract.recognize(file,"eng")
+
+let found=result.data.text.match(/\d+\s*\+\s*\d+/g)
+
+if(found) tasks=found
+
+})
 
 </script>
 
