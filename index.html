@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Mattekompis 22.6</title>
+<title>Mattekompis – Version 23</title>
 
 <style>
 
@@ -69,13 +69,20 @@ to{background-position:-492px}
 #dog{
 position:absolute;
 bottom:80px;
-width:25px; /* 30% */
+width:40px;
+height:40px;
+z-index:3;
+}
+
+#dog img{
+width:100%;
+height:100%;
+object-fit:contain;
 }
 
 /* MARK */
 
 .segment{position:absolute}
-
 .ground{background:#2ecc71}
 
 .hill{
@@ -83,7 +90,14 @@ background:linear-gradient(#2ecc71,#27ae60);
 }
 
 .water{
-background:#3498db;
+background:linear-gradient(90deg,#3498db,#5dade2,#3498db);
+background-size:200% 100%;
+animation:waterMove 2s linear infinite;
+}
+
+@keyframes waterMove{
+0%{background-position:0%}
+100%{background-position:200%}
 }
 
 /* BÅT */
@@ -93,17 +107,18 @@ position:absolute;
 bottom:80px;
 font-size:40px;
 transform:scale(2);
+animation:boatFloat 2s ease-in-out infinite;
+}
+
+@keyframes boatFloat{
+0%{transform:translateY(0) scale(2)}
+50%{transform:translateY(-6px) scale(2)}
+100%{transform:translateY(0) scale(2)}
 }
 
 /* TRÄD */
 
-.tree{
-position:absolute;
-font-size:60px; /* 150% */
-z-index:2;
-}
-
-.palm{
+.tree,.palm{
 position:absolute;
 font-size:60px;
 z-index:2;
@@ -115,6 +130,14 @@ z-index:2;
 position:absolute;
 font-size:40px;
 z-index:1;
+}
+
+/* PLASK */
+
+.splash{
+position:absolute;
+font-size:30px;
+pointer-events:none;
 }
 
 /* KONTROLLER */
@@ -145,14 +168,8 @@ touch-action:manipulation;
 <div id="game">
 <div id="world"></div>
 
-<div id="player">
-<div id="playerSprite"></div>
-</div>
-
-<div id="dog">
-<img src="dog-sit.png">
-</div>
-
+<div id="player"><div id="playerSprite"></div></div>
+<div id="dog"><img src="dog-sit.png"></div>
 </div>
 
 <div id="controls">
@@ -165,17 +182,12 @@ touch-action:manipulation;
 
 /* VARIABLER */
 
-let worldX=0
-let vy=0
-let onGround=true
-let moveDir=0
-let onBoat=null
+let worldX=0, vy=0, onGround=true, moveDir=0, onBoat=null
 
 const world=document.getElementById("world")
 const player=document.getElementById("player")
 
-let segments=[]
-let boats=[]
+let segments=[], boats=[]
 
 const animals=["🐒","🦉","🐝","🦄","🐜","🐙","🐳","🦀","🦑","🦕","🦖","🐍","🐅","🐆","🦓","🦍","🦧","🦒","🦘","🦌","🐈","🐩","🐓","🦩"]
 
@@ -197,10 +209,7 @@ x+=260
 
 }
 
-/* MARK */
-
 function createGround(w){
-
 segments.push({type:"ground",x:x,width:w})
 
 let d=document.createElement("div")
@@ -208,16 +217,11 @@ d.className="segment ground"
 d.style.left=x+"px"
 d.style.width=w+"px"
 d.style.height="80px"
-d.style.bottom="0px"
-
+d.style.bottom="0"
 world.appendChild(d)
-
 }
 
-/* KULLAR */
-
 function createHill(w){
-
 segments.push({type:"hill",x:x,width:w})
 
 let d=document.createElement("div")
@@ -227,12 +231,8 @@ d.style.width=w+"px"
 d.style.height="80px"
 d.style.bottom="80px"
 d.style.borderRadius="50% 50% 0 0"
-
 world.appendChild(d)
-
 }
-
-/* VATTEN + BÅT */
 
 function createWater(w){
 
@@ -243,8 +243,7 @@ d.className="segment water"
 d.style.left=x+"px"
 d.style.width=w+"px"
 d.style.height="80px"
-d.style.bottom="0px"
-
+d.style.bottom="0"
 world.appendChild(d)
 
 /* båt */
@@ -258,15 +257,10 @@ b.style.left=bx+"px"
 
 world.appendChild(b)
 
-boats.push({
-x:bx,
-width:160,
-speed:1.2
-})
-
+boats.push({x:bx,width:160,speed:1.2})
 }
 
-/* DEKOR (glesare!) */
+/* DEKOR */
 
 function spawnDecor(px){
 
@@ -292,10 +286,7 @@ el.style.bottom="80px"
 world.appendChild(el)
 
 }
-
 }
-
-/* djur */
 
 if(Math.random()<0.3){
 
@@ -304,18 +295,14 @@ a.className="animal"
 a.innerText=animals[Math.floor(Math.random()*animals.length)]
 a.style.left=(px+60)+"px"
 a.style.bottom="80px"
-
 world.appendChild(a)
 
 }
-
 }
 
-/* KONTROLLER – FIX */
+/* KONTROLLER */
 
-function stopMove(){
-moveDir=0
-}
+function stopMove(){ moveDir=0 }
 
 right.onpointerdown=()=>moveDir=1
 left.onpointerdown=()=>moveDir=-1
@@ -323,7 +310,6 @@ left.onpointerdown=()=>moveDir=-1
 right.onpointerup=stopMove
 left.onpointerup=stopMove
 
-// EXTRA FIX (viktigt!)
 window.addEventListener("pointerup",stopMove)
 window.addEventListener("touchend",stopMove)
 
@@ -337,65 +323,59 @@ onGround=false
 /* NORMALFÖRDELNING */
 
 function hillHeight(px,s){
-
-let center=s.x+s.width/2
+let c=s.x+s.width/2
 let sigma=s.width/4
-
-let d=px-center
-
-let h=80*Math.exp(-(d*d)/(2*sigma*sigma))
-
-return 80+h
-
+let d=px-c
+return 80+80*Math.exp(-(d*d)/(2*sigma*sigma))
 }
 
 /* MARK */
 
 function getGround(px){
 
-let ground=80
+let ground=null
 onBoat=null
 
-// 1. först segment
 for(let s of segments){
 
 if(px>=s.x && px<=s.x+s.width){
 
 if(s.type==="ground") ground=80
-
 if(s.type==="hill") ground=hillHeight(px,s)
-
-if(s.type==="water") ground=-200
-
-}
+if(s.type==="water") ground=null
 
 }
+}
 
-// 2. sen båt (override!)
-for(let b of boats){
-
+boats.forEach(b=>{
 if(px>=b.x && px<=b.x+b.width){
-
-ground=80
 onBoat=b
-
 }
-
-}
+})
 
 return ground
+}
 
+/* PLASK */
+
+function splash(x,y){
+for(let i=0;i<6;i++){
+let s=document.createElement("div")
+s.className="splash"
+s.innerText="💦"
+s.style.left=(x+Math.random()*40-20)+"px"
+s.style.top=(y+Math.random()*20)+"px"
+document.body.appendChild(s)
+setTimeout(()=>s.remove(),600)
+}
 }
 
 /* LOOP */
 
 function loop(){
 
-if(moveDir!==0){
-worldX-=moveDir*4
-}
+if(moveDir!==0) worldX-=moveDir*4
 
-// flytta båtar
 boats.forEach(b=>b.x+=b.speed)
 
 vy-=0.6
@@ -406,7 +386,10 @@ let ground=getGround(px)
 let bottom=parseFloat(player.style.bottom||80)
 bottom+=vy
 
-if(bottom<=ground){
+// MARK
+if(ground!==null){
+
+if(bottom<=ground && vy<=0){
 bottom=ground
 vy=0
 onGround=true
@@ -414,9 +397,31 @@ onGround=true
 onGround=false
 }
 
-// stå på båt
+}else{
+
+onGround=false
+
+// plask
+if(bottom<60){
+splash(window.innerWidth*0.4,window.innerHeight*0.6)
+}
+
+}
+
+// BÅT
 if(onBoat){
+
+let boatTop=80
+
+if(bottom>=boatTop && bottom+vy<=boatTop){
+
+bottom=boatTop
+vy=0
+onGround=true
 worldX-=onBoat.speed
+
+}
+
 }
 
 player.style.bottom=bottom+"px"
