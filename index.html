@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mattekompis 22.4</title>
+
+<title>Mattekompis 22.5</title>
 
 <style>
 
@@ -42,7 +43,7 @@ width:200000px;
 position:absolute;
 left:40%;
 bottom:80px;
-width:82px; /* 75% */
+width:82px;
 height:82px;
 }
 
@@ -68,14 +69,16 @@ to{background-position:-492px}
 #dog{
 position:absolute;
 bottom:80px;
-width:40px; /* 50% */
+width:40px;
 }
-#dog img{width:100%}
 
 /* SEGMENT */
 
 .segment{position:absolute}
+
 .ground{background:#2ecc71}
+
+/* NORMALFÖRDELNINGSKULLE */
 
 .hill{
 background:linear-gradient(#2ecc71,#27ae60);
@@ -93,22 +96,20 @@ background:#3498db;
 position:absolute;
 bottom:80px;
 font-size:40px;
-transform:scale(2);
+transform:scale(2); /* 200% */
 }
 
 /* TRÄD */
 
 .tree{
 position:absolute;
-font-size:60px; /* 150% */
+font-size:80px; /* 200% */
 z-index:2;
 }
 
-/* PALM */
-
 .palm{
 position:absolute;
-font-size:60px;
+font-size:80px;
 z-index:2;
 }
 
@@ -117,7 +118,7 @@ z-index:2;
 .animal{
 position:absolute;
 font-size:40px;
-z-index:1; /* bakom träd */
+z-index:1;
 }
 
 /* KONTROLLER */
@@ -153,7 +154,7 @@ touch-action:manipulation;
 </div>
 
 <div id="dog">
-<img id="dogImg" src="dog-sit.png">
+<img src="dog-sit.png">
 </div>
 
 </div>
@@ -173,10 +174,10 @@ let vy=0
 let onGround=true
 let moveDir=0
 
+let onBoat=null
+
 const world=document.getElementById("world")
 const player=document.getElementById("player")
-const sprite=document.getElementById("playerSprite")
-const dog=document.getElementById("dog")
 
 let segments=[]
 let boats=[]
@@ -193,9 +194,9 @@ let r=Math.random()
 
 if(r<0.5) createGround(220)
 else if(r<0.75) createHill(220)
-else createWater(250)
+else createWater(300)
 
-spawnDecorCluster(x)
+spawnDecor(x)
 
 x+=260
 
@@ -218,7 +219,7 @@ world.appendChild(d)
 
 }
 
-/* KULLAR (lägre!) */
+/* NORMALFÖRDELNING */
 
 function createHill(w){
 
@@ -228,15 +229,15 @@ let d=document.createElement("div")
 d.className="segment hill"
 d.style.left=x+"px"
 d.style.width=w+"px"
-d.style.height="60px" /* lägre */
+d.style.height="80px"
 d.style.bottom="80px"
-d.style.borderRadius="200px 200px 0 0"
+d.style.borderRadius="50% 50% 0 0"
 
 world.appendChild(d)
 
 }
 
-/* VATTEN */
+/* VATTEN + BÅT */
 
 function createWater(w){
 
@@ -253,7 +254,7 @@ world.appendChild(d)
 
 /* båt */
 
-let bx=x+w/2-40
+let bx=x+w/2-80
 
 let b=document.createElement("div")
 b.className="boat"
@@ -262,45 +263,52 @@ b.style.left=bx+"px"
 
 world.appendChild(b)
 
-boats.push({x:bx,width:80})
+boats.push({
+x:bx,
+width:160,
+speed:1
+})
 
 }
 
-/* TRÄD-KLUSTER */
+/* DEKOR */
 
-function spawnDecorCluster(px){
+function spawnDecor(px){
 
-let count=2+Math.floor(Math.random()*4)
+// glesare
+if(Math.random()<0.3){
+
+let count=2+Math.floor(Math.random()*3)
 
 for(let i=0;i<count;i++){
 
-let type=Math.random()
-
 let el=document.createElement("div")
 
-if(type<0.7){
-el.className="tree"
-el.innerText="🌳"
-}else{
+if(Math.random()<0.8){
 el.className="palm"
 el.innerText="🌴"
+}else{
+el.className="tree"
+el.innerText="🌳"
 }
 
-el.style.left=(px+i*20)+"px"
+el.style.left=(px+i*40)+"px"
 el.style.bottom="80px"
 
 world.appendChild(el)
 
 }
 
-/* djur bakom */
+}
 
-if(Math.random()<0.6){
+/* djur */
+
+if(Math.random()<0.4){
 
 let a=document.createElement("div")
 a.className="animal"
 a.innerText=animals[Math.floor(Math.random()*animals.length)]
-a.style.left=(px+40)+"px"
+a.style.left=(px+60)+"px"
 a.style.bottom="80px"
 
 world.appendChild(a)
@@ -311,11 +319,11 @@ world.appendChild(a)
 
 /* KONTROLLER */
 
-right.onpointerdown=()=>{moveDir=1;sprite.classList.add("walk")}
-right.onpointerup=()=>{moveDir=0;sprite.classList.remove("walk")}
+right.onpointerdown=()=>moveDir=1
+right.onpointerup=()=>moveDir=0
 
-left.onpointerdown=()=>{moveDir=-1;sprite.classList.add("walk")}
-left.onpointerup=()=>{moveDir=0;sprite.classList.remove("walk")}
+left.onpointerdown=()=>moveDir=-1
+left.onpointerup=()=>moveDir=0
 
 jump.onpointerdown=()=>{
 if(onGround){
@@ -324,11 +332,27 @@ onGround=false
 }
 }
 
-/* MARKHÖJD */
+/* NORMALFÖRDELNINGSHÖJD */
+
+function hillHeight(px, s){
+
+let center=s.x+s.width/2
+let sigma=s.width/5
+
+let dist=(px-center)
+
+let height=80*Math.exp(-(dist*dist)/(2*sigma*sigma))
+
+return 80+height
+
+}
+
+/* MARK */
 
 function getGround(px){
 
 let ground=80
+onBoat=null
 
 for(let s of segments){
 
@@ -337,28 +361,27 @@ if(px>=s.x && px<=s.x+s.width){
 if(s.type==="ground") ground=80
 
 if(s.type==="hill"){
-
-let t=(px-s.x)/s.width
-let height=Math.sin(t*Math.PI)*60 /* lägre */
-ground=80+height
-
+ground=hillHeight(px,s)
 }
 
-if(s.type==="water") ground=-200
-
+if(s.type==="water"){
+ground=-200
 }
 
 }
 
-/* båt override */
+}
 
-for(let b of boats){
+/* båt */
+
+boats.forEach(b=>{
 
 if(px>=b.x && px<=b.x+b.width){
 ground=80
+onBoat=b
 }
 
-}
+})
 
 return ground
 
@@ -368,11 +391,17 @@ return ground
 
 function loop(){
 
-// FIX: ingen drift
+// rörelse
 if(moveDir!==0){
 worldX-=moveDir*4
 }
 
+// båt rör sig
+boats.forEach(b=>{
+b.x+=b.speed
+})
+
+// fysik
 vy-=0.6
 
 let px=-worldX + window.innerWidth*0.4
@@ -389,10 +418,13 @@ onGround=true
 onGround=false
 }
 
+// om på båt → följ med
+if(onBoat){
+worldX-=onBoat.speed
+}
+
 player.style.bottom=bottom+"px"
 world.style.left=worldX+"px"
-
-dog.style.left=(player.offsetLeft-60)+"px"
 
 requestAnimationFrame(loop)
 
