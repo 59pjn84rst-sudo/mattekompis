@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Mattekompis – Version 23</title>
+<title>Mattekompis 23.1</title>
 
 <style>
 
@@ -69,8 +69,8 @@ to{background-position:-492px}
 #dog{
 position:absolute;
 bottom:80px;
-width:40px;
-height:40px;
+width:30px;
+height:30px;
 z-index:3;
 }
 
@@ -83,7 +83,10 @@ object-fit:contain;
 /* MARK */
 
 .segment{position:absolute}
-.ground{background:#2ecc71}
+
+.ground{
+background:#2ecc71;
+}
 
 .hill{
 background:linear-gradient(#2ecc71,#27ae60);
@@ -91,13 +94,6 @@ background:linear-gradient(#2ecc71,#27ae60);
 
 .water{
 background:linear-gradient(90deg,#3498db,#5dade2,#3498db);
-background-size:200% 100%;
-animation:waterMove 2s linear infinite;
-}
-
-@keyframes waterMove{
-0%{background-position:0%}
-100%{background-position:200%}
 }
 
 /* BÅT */
@@ -107,13 +103,6 @@ position:absolute;
 bottom:80px;
 font-size:40px;
 transform:scale(2);
-animation:boatFloat 2s ease-in-out infinite;
-}
-
-@keyframes boatFloat{
-0%{transform:translateY(0) scale(2)}
-50%{transform:translateY(-6px) scale(2)}
-100%{transform:translateY(0) scale(2)}
 }
 
 /* TRÄD */
@@ -124,20 +113,12 @@ font-size:60px;
 z-index:2;
 }
 
-/* DJUR */
+/* DINOSAURIER */
 
-.animal{
+.dino{
 position:absolute;
-font-size:40px;
+font-size:50px;
 z-index:1;
-}
-
-/* PLASK */
-
-.splash{
-position:absolute;
-font-size:30px;
-pointer-events:none;
 }
 
 /* KONTROLLER */
@@ -169,7 +150,7 @@ touch-action:manipulation;
 <div id="world"></div>
 
 <div id="player"><div id="playerSprite"></div></div>
-<div id="dog"><img src="dog-sit.png"></div>
+<div id="dog"><img id="dogImg" src="dog-sit.png"></div>
 </div>
 
 <div id="controls">
@@ -182,14 +163,15 @@ touch-action:manipulation;
 
 /* VARIABLER */
 
-let worldX=0, vy=0, onGround=true, moveDir=0, onBoat=null
+let worldX=0, vy=0, onGround=true, moveDir=0
+let onBoat=null
 
 const world=document.getElementById("world")
 const player=document.getElementById("player")
+const dog=document.getElementById("dog")
+const dogImg=document.getElementById("dogImg")
 
 let segments=[], boats=[]
-
-const animals=["🐒","🦉","🐝","🦄","🐜","🐙","🐳","🦀","🦑","🦕","🦖","🐍","🐅","🐆","🦓","🦍","🦧","🦒","🦘","🦌","🐈","🐩","🐓","🦩"]
 
 /* GENERERA */
 
@@ -209,7 +191,10 @@ x+=260
 
 }
 
+/* MARK */
+
 function createGround(w){
+
 segments.push({type:"ground",x:x,width:w})
 
 let d=document.createElement("div")
@@ -219,10 +204,21 @@ d.style.width=w+"px"
 d.style.height="80px"
 d.style.bottom="0"
 world.appendChild(d)
+
 }
 
 function createHill(w){
+
 segments.push({type:"hill",x:x,width:w})
+
+// basmark under
+let base=document.createElement("div")
+base.className="segment ground"
+base.style.left=x+"px"
+base.style.width=w+"px"
+base.style.height="80px"
+base.style.bottom="0"
+world.appendChild(base)
 
 let d=document.createElement("div")
 d.className="segment hill"
@@ -232,6 +228,7 @@ d.style.height="80px"
 d.style.bottom="80px"
 d.style.borderRadius="50% 50% 0 0"
 world.appendChild(d)
+
 }
 
 function createWater(w){
@@ -246,7 +243,7 @@ d.style.height="80px"
 d.style.bottom="0"
 world.appendChild(d)
 
-/* båt */
+/* BÅT */
 
 let bx=x+w/2-80
 
@@ -258,13 +255,19 @@ b.style.left=bx+"px"
 world.appendChild(b)
 
 boats.push({x:bx,width:160,speed:1.2})
+
 }
 
 /* DEKOR */
 
 function spawnDecor(px){
 
-if(Math.random()<0.2){
+// träd/palmer
+let hasTree=false
+
+if(Math.random()<0.25){
+
+hasTree=true
 
 let count=2+Math.floor(Math.random()*2)
 
@@ -288,24 +291,37 @@ world.appendChild(el)
 }
 }
 
-if(Math.random()<0.3){
+// dinosaurier bara på platt mark utan träd
+if(!hasTree && Math.random()<0.3){
 
-let a=document.createElement("div")
-a.className="animal"
-a.innerText=animals[Math.floor(Math.random()*animals.length)]
-a.style.left=(px+60)+"px"
-a.style.bottom="80px"
-world.appendChild(a)
+let d=document.createElement("div")
+d.className="dino"
+d.innerText=Math.random()<0.5?"🦖":"🦕"
+d.style.left=(px+60)+"px"
+d.style.bottom="80px"
+
+world.appendChild(d)
 
 }
+
 }
 
 /* KONTROLLER */
 
-function stopMove(){ moveDir=0 }
+function stopMove(){
+moveDir=0
+dogImg.src="dog-sit.png"
+}
 
-right.onpointerdown=()=>moveDir=1
-left.onpointerdown=()=>moveDir=-1
+right.onpointerdown=()=>{
+moveDir=1
+dogImg.src="dog-walk.png"
+}
+
+left.onpointerdown=()=>{
+moveDir=-1
+dogImg.src="dog-walk.png"
+}
 
 right.onpointerup=stopMove
 left.onpointerup=stopMove
@@ -320,62 +336,55 @@ onGround=false
 }
 }
 
-/* NORMALFÖRDELNING */
+/* KULLAR */
 
 function hillHeight(px,s){
 let c=s.x+s.width/2
 let sigma=s.width/4
 let d=px-c
-return 80+80*Math.exp(-(d*d)/(2*sigma*sigma))
+return 80+60*Math.exp(-(d*d)/(2*sigma*sigma))
 }
 
 /* MARK */
 
 function getGround(px){
 
-let ground=null
 onBoat=null
 
+// 1. kolla båt FÖRST (fix!)
+for(let b of boats){
+if(px>=b.x && px<=b.x+b.width){
+onBoat=b
+return 80
+}
+}
+
+// 2. kolla segment
 for(let s of segments){
 
 if(px>=s.x && px<=s.x+s.width){
 
-if(s.type==="ground") ground=80
-if(s.type==="hill") ground=hillHeight(px,s)
-if(s.type==="water") ground=null
+if(s.type==="ground") return 80
+if(s.type==="hill") return hillHeight(px,s)
+if(s.type==="water") return null
 
 }
+
 }
 
-boats.forEach(b=>{
-if(px>=b.x && px<=b.x+b.width){
-onBoat=b
-}
-})
+return 80
 
-return ground
-}
-
-/* PLASK */
-
-function splash(x,y){
-for(let i=0;i<6;i++){
-let s=document.createElement("div")
-s.className="splash"
-s.innerText="💦"
-s.style.left=(x+Math.random()*40-20)+"px"
-s.style.top=(y+Math.random()*20)+"px"
-document.body.appendChild(s)
-setTimeout(()=>s.remove(),600)
-}
 }
 
 /* LOOP */
 
 function loop(){
 
-if(moveDir!==0) worldX-=moveDir*4
+if(moveDir!==0){
+worldX-=moveDir*4
+}
 
+// flytta båtar
 boats.forEach(b=>b.x+=b.speed)
 
 vy-=0.6
@@ -386,7 +395,6 @@ let ground=getGround(px)
 let bottom=parseFloat(player.style.bottom||80)
 bottom+=vy
 
-// MARK
 if(ground!==null){
 
 if(bottom<=ground && vy<=0){
@@ -398,34 +406,19 @@ onGround=false
 }
 
 }else{
-
 onGround=false
-
-// plask
-if(bottom<60){
-splash(window.innerWidth*0.4,window.innerHeight*0.6)
 }
 
-}
-
-// BÅT
+// följ båt
 if(onBoat){
-
-let boatTop=80
-
-if(bottom>=boatTop && bottom+vy<=boatTop){
-
-bottom=boatTop
-vy=0
-onGround=true
 worldX-=onBoat.speed
-
-}
-
 }
 
 player.style.bottom=bottom+"px"
 world.style.left=worldX+"px"
+
+// hund närmare
+dog.style.left=(player.offsetLeft-40)+"px"
 
 requestAnimationFrame(loop)
 
