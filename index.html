@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Mattekompis 22.5</title>
+<title>Mattekompis 22.6</title>
 
 <style>
 
@@ -69,22 +69,18 @@ to{background-position:-492px}
 #dog{
 position:absolute;
 bottom:80px;
-width:40px;
+width:25px; /* 30% */
 }
 
-/* SEGMENT */
+/* MARK */
 
 .segment{position:absolute}
 
 .ground{background:#2ecc71}
 
-/* NORMALFÖRDELNINGSKULLE */
-
 .hill{
 background:linear-gradient(#2ecc71,#27ae60);
 }
-
-/* VATTEN */
 
 .water{
 background:#3498db;
@@ -96,20 +92,20 @@ background:#3498db;
 position:absolute;
 bottom:80px;
 font-size:40px;
-transform:scale(2); /* 200% */
+transform:scale(2);
 }
 
 /* TRÄD */
 
 .tree{
 position:absolute;
-font-size:80px; /* 200% */
+font-size:60px; /* 150% */
 z-index:2;
 }
 
 .palm{
 position:absolute;
-font-size:80px;
+font-size:60px;
 z-index:2;
 }
 
@@ -173,7 +169,6 @@ let worldX=0
 let vy=0
 let onGround=true
 let moveDir=0
-
 let onBoat=null
 
 const world=document.getElementById("world")
@@ -219,7 +214,7 @@ world.appendChild(d)
 
 }
 
-/* NORMALFÖRDELNING */
+/* KULLAR */
 
 function createHill(w){
 
@@ -266,19 +261,18 @@ world.appendChild(b)
 boats.push({
 x:bx,
 width:160,
-speed:1
+speed:1.2
 })
 
 }
 
-/* DEKOR */
+/* DEKOR (glesare!) */
 
 function spawnDecor(px){
 
-// glesare
-if(Math.random()<0.3){
+if(Math.random()<0.2){
 
-let count=2+Math.floor(Math.random()*3)
+let count=2+Math.floor(Math.random()*2)
 
 for(let i=0;i<count;i++){
 
@@ -303,7 +297,7 @@ world.appendChild(el)
 
 /* djur */
 
-if(Math.random()<0.4){
+if(Math.random()<0.3){
 
 let a=document.createElement("div")
 a.className="animal"
@@ -317,13 +311,21 @@ world.appendChild(a)
 
 }
 
-/* KONTROLLER */
+/* KONTROLLER – FIX */
+
+function stopMove(){
+moveDir=0
+}
 
 right.onpointerdown=()=>moveDir=1
-right.onpointerup=()=>moveDir=0
-
 left.onpointerdown=()=>moveDir=-1
-left.onpointerup=()=>moveDir=0
+
+right.onpointerup=stopMove
+left.onpointerup=stopMove
+
+// EXTRA FIX (viktigt!)
+window.addEventListener("pointerup",stopMove)
+window.addEventListener("touchend",stopMove)
 
 jump.onpointerdown=()=>{
 if(onGround){
@@ -332,18 +334,18 @@ onGround=false
 }
 }
 
-/* NORMALFÖRDELNINGSHÖJD */
+/* NORMALFÖRDELNING */
 
-function hillHeight(px, s){
+function hillHeight(px,s){
 
 let center=s.x+s.width/2
-let sigma=s.width/5
+let sigma=s.width/4
 
-let dist=(px-center)
+let d=px-center
 
-let height=80*Math.exp(-(dist*dist)/(2*sigma*sigma))
+let h=80*Math.exp(-(d*d)/(2*sigma*sigma))
 
-return 80+height
+return 80+h
 
 }
 
@@ -354,34 +356,32 @@ function getGround(px){
 let ground=80
 onBoat=null
 
+// 1. först segment
 for(let s of segments){
 
 if(px>=s.x && px<=s.x+s.width){
 
 if(s.type==="ground") ground=80
 
-if(s.type==="hill"){
-ground=hillHeight(px,s)
-}
+if(s.type==="hill") ground=hillHeight(px,s)
 
-if(s.type==="water"){
-ground=-200
-}
+if(s.type==="water") ground=-200
 
 }
 
 }
 
-/* båt */
-
-boats.forEach(b=>{
+// 2. sen båt (override!)
+for(let b of boats){
 
 if(px>=b.x && px<=b.x+b.width){
+
 ground=80
 onBoat=b
+
 }
 
-})
+}
 
 return ground
 
@@ -391,17 +391,13 @@ return ground
 
 function loop(){
 
-// rörelse
 if(moveDir!==0){
 worldX-=moveDir*4
 }
 
-// båt rör sig
-boats.forEach(b=>{
-b.x+=b.speed
-})
+// flytta båtar
+boats.forEach(b=>b.x+=b.speed)
 
-// fysik
 vy-=0.6
 
 let px=-worldX + window.innerWidth*0.4
@@ -418,7 +414,7 @@ onGround=true
 onGround=false
 }
 
-// om på båt → följ med
+// stå på båt
 if(onBoat){
 worldX-=onBoat.speed
 }
@@ -434,4 +430,4 @@ loop()
 
 </script>
 </body>
-</html> 
+</html>
