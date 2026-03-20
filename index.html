@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Mattekompis 23.1</title>
+<title>Mattekompis 23.2</title>
 
 <style>
 
@@ -45,6 +45,7 @@ left:40%;
 bottom:80px;
 width:82px;
 height:82px;
+z-index:5;
 }
 
 #playerSprite{
@@ -71,7 +72,7 @@ position:absolute;
 bottom:80px;
 width:30px;
 height:30px;
-z-index:3;
+z-index:4;
 }
 
 #dog img{
@@ -84,9 +85,7 @@ object-fit:contain;
 
 .segment{position:absolute}
 
-.ground{
-background:#2ecc71;
-}
+.ground{background:#2ecc71;}
 
 .hill{
 background:linear-gradient(#2ecc71,#27ae60);
@@ -211,7 +210,7 @@ function createHill(w){
 
 segments.push({type:"hill",x:x,width:w})
 
-// basmark under
+// mark under
 let base=document.createElement("div")
 base.className="segment ground"
 base.style.left=x+"px"
@@ -243,7 +242,7 @@ d.style.height="80px"
 d.style.bottom="0"
 world.appendChild(d)
 
-/* BÅT */
+/* båt */
 
 let bx=x+w/2-80
 
@@ -262,7 +261,6 @@ boats.push({x:bx,width:160,speed:1.2})
 
 function spawnDecor(px){
 
-// träd/palmer
 let hasTree=false
 
 if(Math.random()<0.25){
@@ -291,7 +289,7 @@ world.appendChild(el)
 }
 }
 
-// dinosaurier bara på platt mark utan träd
+// dinos only on flat ground without trees
 if(!hasTree && Math.random()<0.3){
 
 let d=document.createElement("div")
@@ -327,7 +325,9 @@ right.onpointerup=stopMove
 left.onpointerup=stopMove
 
 window.addEventListener("pointerup",stopMove)
+window.addEventListener("pointercancel",stopMove)
 window.addEventListener("touchend",stopMove)
+window.addEventListener("blur",stopMove)
 
 jump.onpointerdown=()=>{
 if(onGround){
@@ -349,9 +349,10 @@ return 80+60*Math.exp(-(d*d)/(2*sigma*sigma))
 
 function getGround(px){
 
+let ground=null
 onBoat=null
 
-// 1. kolla båt FÖRST (fix!)
+// boat first
 for(let b of boats){
 if(px>=b.x && px<=b.x+b.width){
 onBoat=b
@@ -359,7 +360,7 @@ return 80
 }
 }
 
-// 2. kolla segment
+// terrain
 for(let s of segments){
 
 if(px>=s.x && px<=s.x+s.width){
@@ -373,7 +374,6 @@ if(s.type==="water") return null
 }
 
 return 80
-
 }
 
 /* LOOP */
@@ -384,7 +384,7 @@ if(moveDir!==0){
 worldX-=moveDir*4
 }
 
-// flytta båtar
+// move boats
 boats.forEach(b=>b.x+=b.speed)
 
 vy-=0.6
@@ -393,32 +393,62 @@ let px=-worldX + window.innerWidth*0.4
 let ground=getGround(px)
 
 let bottom=parseFloat(player.style.bottom||80)
+let prevBottom=bottom
+
 bottom+=vy
 
-if(ground!==null){
+// BOAT LANDING
+if(onBoat){
+
+let boatTop=80
+
+if(prevBottom>=boatTop && bottom<=boatTop){
+
+bottom=boatTop
+vy=0
+onGround=true
+
+// follow boat
+worldX-=onBoat.speed
+
+}else{
+onGround=false
+}
+
+}
+
+// GROUND
+else if(ground!==null){
 
 if(bottom<=ground && vy<=0){
+
 bottom=ground
 vy=0
 onGround=true
-}else{
-onGround=false
-}
 
 }else{
 onGround=false
 }
 
-// följ båt
-if(onBoat){
-worldX-=onBoat.speed
+}
+
+// FALL
+else{
+onGround=false
 }
 
 player.style.bottom=bottom+"px"
 world.style.left=worldX+"px"
 
-// hund närmare
-dog.style.left=(player.offsetLeft-40)+"px"
+// DOG FOLLOW
+dog.style.left=(player.offsetLeft-35)+"px"
+dog.style.bottom=player.style.bottom
+
+if(!onGround){
+dog.style.transform="translateY(-10px)"
+}else{
+dog.style.transform="translateY(0)"
+}
 
 requestAnimationFrame(loop)
 
