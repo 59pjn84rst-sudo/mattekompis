@@ -3,8 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Mattekompis – Grafikläge 22.3</title>
+<title>Mattekompis 22.4</title>
 
 <style>
 
@@ -43,8 +42,8 @@ width:200000px;
 position:absolute;
 left:40%;
 bottom:80px;
-width:110px;
-height:110px;
+width:82px; /* 75% */
+height:82px;
 }
 
 #playerSprite{
@@ -55,13 +54,13 @@ background:url("player-idle.PNG") center/contain no-repeat;
 
 .walk{
 background:url("player-walk.PNG");
-background-size:auto 110px;
+background-size:auto 82px;
 animation:walk .6s steps(6) infinite;
 }
 
 @keyframes walk{
 from{background-position:0}
-to{background-position:-660px}
+to{background-position:-492px}
 }
 
 /* HUND */
@@ -69,7 +68,7 @@ to{background-position:-660px}
 #dog{
 position:absolute;
 bottom:80px;
-width:80px;
+width:40px; /* 50% */
 }
 #dog img{width:100%}
 
@@ -77,8 +76,16 @@ width:80px;
 
 .segment{position:absolute}
 .ground{background:#2ecc71}
-.hill{background:#27ae60}
-.water{background:#3498db}
+
+.hill{
+background:linear-gradient(#2ecc71,#27ae60);
+}
+
+/* VATTEN */
+
+.water{
+background:#3498db;
+}
 
 /* BÅT */
 
@@ -86,19 +93,31 @@ width:80px;
 position:absolute;
 bottom:80px;
 font-size:40px;
-transform:scale(2); /* dubbelt så lång */
+transform:scale(2);
 }
 
-/* DEKOR */
+/* TRÄD */
 
 .tree{
 position:absolute;
-font-size:160px; /* 4x */
+font-size:60px; /* 150% */
+z-index:2;
 }
+
+/* PALM */
+
+.palm{
+position:absolute;
+font-size:60px;
+z-index:2;
+}
+
+/* DJUR */
 
 .animal{
 position:absolute;
-font-size:60px; /* 2x */
+font-size:40px;
+z-index:1; /* bakom träd */
 }
 
 /* KONTROLLER */
@@ -152,19 +171,17 @@ touch-action:manipulation;
 let worldX=0
 let vy=0
 let onGround=true
-
-let moveDir=0 // -1 vänster, 1 höger
+let moveDir=0
 
 const world=document.getElementById("world")
 const player=document.getElementById("player")
 const sprite=document.getElementById("playerSprite")
 const dog=document.getElementById("dog")
-const dogImg=document.getElementById("dogImg")
-
-const animals=["🐒","🦉","🐝","🦄","🐜","🐙","🐳","🦀","🦑","🦕","🦖","🐍","🐅","🐆","🦓","🦍","🦧","🦒","🦘","🦌","🐈","🐩","🐓","🦩"]
 
 let segments=[]
 let boats=[]
+
+const animals=["🐒","🦉","🐝","🦄","🐜","🐙","🐳","🦀","🦑","🦕","🦖","🐍","🐅","🐆","🦓","🦍","🦧","🦒","🦘","🦌","🐈","🐩","🐓","🦩"]
 
 /* GENERERA */
 
@@ -174,15 +191,17 @@ for(let i=0;i<80;i++){
 
 let r=Math.random()
 
-if(r<0.5) createGround(200)
+if(r<0.5) createGround(220)
 else if(r<0.75) createHill(220)
 else createWater(250)
 
-spawnDecor(x)
+spawnDecorCluster(x)
 
-x+=250
+x+=260
 
 }
+
+/* MARK */
 
 function createGround(w){
 
@@ -199,6 +218,8 @@ world.appendChild(d)
 
 }
 
+/* KULLAR (lägre!) */
+
 function createHill(w){
 
 segments.push({type:"hill",x:x,width:w})
@@ -207,13 +228,15 @@ let d=document.createElement("div")
 d.className="segment hill"
 d.style.left=x+"px"
 d.style.width=w+"px"
-d.style.height="120px"
+d.style.height="60px" /* lägre */
 d.style.bottom="80px"
 d.style.borderRadius="200px 200px 0 0"
 
 world.appendChild(d)
 
 }
+
+/* VATTEN */
 
 function createWater(w){
 
@@ -239,32 +262,47 @@ b.style.left=bx+"px"
 
 world.appendChild(b)
 
-boats.push({x:bx,width:80}) // dubbelt så bred
+boats.push({x:bx,width:80})
 
 }
 
-/* DEKOR */
+/* TRÄD-KLUSTER */
 
-function spawnDecor(px){
+function spawnDecorCluster(px){
+
+let count=2+Math.floor(Math.random()*4)
+
+for(let i=0;i<count;i++){
+
+let type=Math.random()
+
+let el=document.createElement("div")
+
+if(type<0.7){
+el.className="tree"
+el.innerText="🌳"
+}else{
+el.className="palm"
+el.innerText="🌴"
+}
+
+el.style.left=(px+i*20)+"px"
+el.style.bottom="80px"
+
+world.appendChild(el)
+
+}
+
+/* djur bakom */
 
 if(Math.random()<0.6){
-
-let t=document.createElement("div")
-t.className="tree"
-t.innerText="🌳"
-t.style.left=px+"px"
-t.style.bottom="80px"
-world.appendChild(t)
-
-}
-
-if(Math.random()<0.5){
 
 let a=document.createElement("div")
 a.className="animal"
 a.innerText=animals[Math.floor(Math.random()*animals.length)]
-a.style.left=(px+50)+"px"
+a.style.left=(px+40)+"px"
 a.style.bottom="80px"
+
 world.appendChild(a)
 
 }
@@ -273,36 +311,20 @@ world.appendChild(a)
 
 /* KONTROLLER */
 
-right.onpointerdown=()=>{
-moveDir=1
-sprite.classList.add("walk")
-dogImg.src="dog-walk.png"
-}
+right.onpointerdown=()=>{moveDir=1;sprite.classList.add("walk")}
+right.onpointerup=()=>{moveDir=0;sprite.classList.remove("walk")}
 
-right.onpointerup=()=>{
-moveDir=0
-sprite.classList.remove("walk")
-dogImg.src="dog-sit.png"
-}
-
-left.onpointerdown=()=>{
-moveDir=-1
-sprite.classList.add("walk")
-}
-
-left.onpointerup=()=>{
-moveDir=0
-sprite.classList.remove("walk")
-}
+left.onpointerdown=()=>{moveDir=-1;sprite.classList.add("walk")}
+left.onpointerup=()=>{moveDir=0;sprite.classList.remove("walk")}
 
 jump.onpointerdown=()=>{
 if(onGround){
-vy=14
+vy=12
 onGround=false
 }
 }
 
-/* MARKHÖJD (FIXAD!) */
+/* MARKHÖJD */
 
 function getGround(px){
 
@@ -312,40 +334,28 @@ for(let s of segments){
 
 if(px>=s.x && px<=s.x+s.width){
 
-if(s.type==="ground"){
-ground=80
-}
+if(s.type==="ground") ground=80
 
 if(s.type==="hill"){
 
 let t=(px-s.x)/s.width
-
-// viktig fix: clamp
-if(t<0) t=0
-if(t>1) t=1
-
-let height=Math.sin(t*Math.PI)*120
-
+let height=Math.sin(t*Math.PI)*60 /* lägre */
 ground=80+height
 
 }
 
-if(s.type==="water"){
-ground=-200
-}
+if(s.type==="water") ground=-200
 
 }
 
 }
 
-/* båt PRIORITERAS */
+/* båt override */
 
 for(let b of boats){
 
 if(px>=b.x && px<=b.x+b.width){
-
 ground=80
-
 }
 
 }
@@ -358,6 +368,7 @@ return ground
 
 function loop(){
 
+// FIX: ingen drift
 if(moveDir!==0){
 worldX-=moveDir*4
 }
@@ -365,13 +376,11 @@ worldX-=moveDir*4
 vy-=0.6
 
 let px=-worldX + window.innerWidth*0.4
-
 let ground=getGround(px)
 
 let bottom=parseFloat(player.style.bottom||80)
 bottom+=vy
 
-// viktig fix: fotpunkt istället för mitten
 if(bottom<=ground){
 bottom=ground
 vy=0
@@ -383,7 +392,7 @@ onGround=false
 player.style.bottom=bottom+"px"
 world.style.left=worldX+"px"
 
-dog.style.left=(player.offsetLeft-90)+"px"
+dog.style.left=(player.offsetLeft-60)+"px"
 
 requestAnimationFrame(loop)
 
