@@ -3,61 +3,44 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mattekompis</title>
+<title>Mattekompis – Grafikläge</title>
 
 <style>
 
-*{box-sizing:border-box;margin:0;padding:0;-webkit-user-select:none;user-select:none}
-
-body{
-overflow:hidden;
-font-family:sans-serif;
-background:linear-gradient(#7ecbff,#c8f6ff);
-}
+body{margin:0;overflow:hidden;background:linear-gradient(#7ecbff,#c8f6ff);font-family:sans-serif}
 
 /* SPEL */
 
-#game{
-position:relative;
-height:65vh;
-overflow:hidden;
-}
+#game{position:relative;height:65vh;overflow:hidden}
+#world{position:absolute;bottom:0;left:0;height:100%;width:100000px}
 
-#world{
-position:absolute;
-bottom:0;
-left:0;
-height:100%;
-width:50000px;
-}
-
-.ground{
-position:absolute;
-bottom:0;
-height:80px;
-width:50000px;
-background:#2ecc71;
-}
+.ground{position:absolute;bottom:0;height:80px;width:100000px;background:#2ecc71}
 
 /* KULLAR */
 
 .hill{
 position:absolute;
-bottom:80px;
 width:220px;
 height:120px;
 background:#27ae60;
 border-radius:200px 200px 0 0;
 }
 
-/* HÅL */
+/* VATTEN */
 
-.pit{
+.water{
 position:absolute;
 bottom:0;
-width:140px;
 height:80px;
-background:#7ecbff;
+background:#3498db;
+}
+
+/* BÅT */
+
+.boat{
+position:absolute;
+bottom:80px;
+font-size:40px;
 }
 
 /* SPELARE */
@@ -71,11 +54,9 @@ height:110px;
 }
 
 #playerSprite{
-width:110px;
-height:110px;
-background:url("player-idle.PNG");
-background-size:contain;
-background-repeat:no-repeat;
+width:100%;
+height:100%;
+background:url("player-idle.PNG") center/contain no-repeat;
 }
 
 .walk{
@@ -99,85 +80,10 @@ width:80px;
 
 #dog img{width:100%}
 
-/* OBJEKT */
+/* DEKOR */
 
-.coin{position:absolute;font-size:26px}
 .tree{position:absolute;font-size:40px}
-.flower{position:absolute;font-size:24px}
-.hedgehog{position:absolute;font-size:28px}
-
-.flag{
-position:absolute;
-bottom:80px;
-font-size:70px;
-}
-
-/* UI */
-
-#progress{
-position:absolute;
-top:10px;
-left:10px;
-background:white;
-padding:6px 10px;
-border-radius:6px;
-}
-
-#controls{
-display:flex;
-justify-content:center;
-gap:30px;
-padding:15px;
-background:#1c2e4a;
-}
-
-button{
-font-size:28px;
-padding:14px 20px;
-border:none;
-border-radius:10px;
-background:#2f4b7c;
-color:white;
-}
-
-/* MATTE */
-
-#math{
-position:fixed;
-inset:0;
-background:rgba(0,0,0,.6);
-display:none;
-align-items:center;
-justify-content:center;
-}
-
-.grid{
-display:grid;
-grid-template-columns:60px 60px 60px;
-grid-template-rows:60px 60px 60px 60px;
-background:white;
-padding:10px;
-}
-
-.cell{
-border:2px solid black;
-display:flex;
-align-items:center;
-justify-content:center;
-font-size:28px;
-}
-
-input{
-width:100%;
-height:100%;
-border:none;
-font-size:28px;
-text-align:center;
-}
-
-/* FIRANDE */
-
-.fire{position:absolute;font-size:30px}
+.animal{position:absolute;font-size:30px}
 
 </style>
 </head>
@@ -185,56 +91,28 @@ text-align:center;
 <body>
 
 <div id="game">
+<div id="world"><div class="ground"></div></div>
 
-<div id="progress">0 / 5</div>
-
-<div id="world">
-<div class="ground"></div>
+<div id="player"><div id="playerSprite"></div></div>
+<div id="dog"><img id="dogImg" src="dog-sit.png"></div>
 </div>
 
-<div id="player">
-<div id="playerSprite"></div>
-</div>
-
-<div id="dog">
-<img id="dogImg" src="dog-sit.png">
-</div>
-
-</div>
-
-<div id="controls">
+<div style="display:flex;justify-content:center;gap:20px;background:#1c2e4a;padding:10px">
 <button id="jump">⬆️</button>
 <button id="right">➡️</button>
 </div>
 
-<div id="math">
-<div>
-<div class="grid" id="grid"></div>
-<button onclick="check()">Klar</button>
-</div>
-</div>
-
 <audio id="music" src="Music.mp3" loop></audio>
 <audio id="jumpSound" src="Jump.mp3"></audio>
-<audio id="correctSound" src="Correct.mp3"></audio>
 
 <script>
 
-/* SPELVARIABLER */
+/* VARIABLER */
 
 let worldX=0
 let vy=0
 let onGround=true
 let moving=false
-let paused=false
-let finished=false
-let flagReached=false
-
-let tasks=["39+15","63+28","58+34","37+45","44+17"]
-
-let taskIndex=0
-let correct=0
-let nextSpawn=600
 
 const world=document.getElementById("world")
 const player=document.getElementById("player")
@@ -244,59 +122,37 @@ const dogImg=document.getElementById("dogImg")
 
 const music=document.getElementById("music")
 const jumpSound=document.getElementById("jumpSound")
-const correctSound=document.getElementById("correctSound")
+
+let nextSpawn=400
+
+const animals=["🐒","🦉","🐝","🦄","🐜","🐙","🐳","🦀","🦑","🦕","🦖","🐍","🐅","🐆","🦓","🦍","🦧","🦒","🦘","🦌","🐈","🐩","🐓","🦩"]
 
 generateWorld()
 
-/* GENERERA BANA */
+/* GENERERA VÄRLD */
 
 function generateWorld(){
 
-for(let i=0;i<40;i++){
+for(let i=0;i<60;i++){
 
-spawnObstacle()
-spawnCoin()
 spawnHill()
-spawnPit()
-spawnDecoration()
+spawnWater()
+spawnDecor()
+
+nextSpawn+=300
 
 }
-
-}
-
-function spawnObstacle(){
-
-let o=document.createElement("div")
-o.className="hedgehog"
-o.innerText="🦔"
-o.style.left=nextSpawn+"px"
-o.style.bottom="80px"
-
-world.appendChild(o)
-
-nextSpawn+=500
-
-}
-
-function spawnCoin(){
-
-let c=document.createElement("div")
-c.className="coin"
-c.innerText="🪙"
-c.style.left=(nextSpawn-250)+"px"
-c.style.bottom="140px"
-
-world.appendChild(c)
 
 }
 
 function spawnHill(){
 
-if(Math.random()<0.5){
+if(Math.random()<0.4){
 
 let h=document.createElement("div")
 h.className="hill"
-h.style.left=(nextSpawn-200)+"px"
+h.style.left=nextSpawn+"px"
+h.style.bottom="80px"
 
 world.appendChild(h)
 
@@ -304,41 +160,63 @@ world.appendChild(h)
 
 }
 
-function spawnPit(){
+function spawnWater(){
 
-if(Math.random()<0.35){
+if(Math.random()<0.3){
 
-let p=document.createElement("div")
-p.className="pit"
-p.style.left=(nextSpawn-350)+"px"
+let width=120+Math.random()*200
 
-world.appendChild(p)
+let w=document.createElement("div")
+w.className="water"
+w.style.left=nextSpawn+"px"
+w.style.width=width+"px"
+
+world.appendChild(w)
+
+/* båt */
+
+if(width>200){
+
+let b=document.createElement("div")
+b.className="boat"
+b.innerText="⛵"
+b.style.left=(nextSpawn+width/2-20)+"px"
+
+world.appendChild(b)
 
 }
 
 }
 
-function spawnDecoration(){
+}
 
-let r=Math.random()
+function spawnDecor(){
 
-if(r<0.3){
+/* träd */
+
+if(Math.random()<0.5){
 
 let t=document.createElement("div")
 t.className="tree"
 t.innerText="🌳"
-t.style.left=(nextSpawn-100)+"px"
+t.style.left=nextSpawn+"px"
 t.style.bottom="80px"
+
 world.appendChild(t)
 
-}else{
+}
 
-let f=document.createElement("div")
-f.className="flower"
-f.innerText="🌼"
-f.style.left=(nextSpawn-150)+"px"
-f.style.bottom="80px"
-world.appendChild(f)
+/* djur */
+
+if(Math.random()<0.5){
+
+let a=document.createElement("div")
+a.className="animal"
+a.innerText=animals[Math.floor(Math.random()*animals.length)]
+a.style.left=(nextSpawn+50)+"px"
+a.style.bottom="80px"
+
+world.appendChild(a)
 
 }
 
@@ -367,149 +245,14 @@ jumpSound.play()
 }
 }
 
-/* MATTE */
-
-function showMath(){
-
-paused=true
-
-let q=tasks[taskIndex]
-let [a,b]=q.split("+").map(Number)
-
-correct=a+b
-
-buildGrid(a,b)
-
-math.style.display="flex"
-
-}
-
-function buildGrid(a,b){
-
-const grid=document.getElementById("grid")
-grid.innerHTML=""
-
-const aT=Math.floor(a/10)
-const aO=a%10
-const bT=Math.floor(b/10)
-const bO=b%10
-
-const cells=[
-"", "", "",
-"", aT, aO,
-"+", bT, bO,
-"", "", ""
-]
-
-cells.forEach((v,i)=>{
-
-let c=document.createElement("div")
-c.className="cell"
-
-if(v===""){
-
-let inp=document.createElement("input")
-inp.maxLength=1
-
-if(i>=9) inp.classList.add("answer")
-
-c.appendChild(inp)
-
-}else{
-
-c.textContent=v
-
-}
-
-grid.appendChild(c)
-
-})
-
-}
-
-function check(){
-
-let nums=[...document.querySelectorAll(".answer")].map(i=>i.value).join("")
-let val=parseInt(nums)
-
-if(val===correct){
-
-correctSound.play()
-dogJump()
-
-taskIndex++
-progress.innerText=taskIndex+" / "+tasks.length
-
-math.style.display="none"
-paused=false
-
-if(taskIndex>=tasks.length){
-
-finished=true
-spawnFlag()
-
-}
-
-}
-
-}
-
-function dogJump(){
-
-dog.style.transform="translateY(-40px)"
-
-setTimeout(()=>{
-dog.style.transform="translateY(0)"
-},200)
-
-}
-
-/* FLAGGA */
-
-function spawnFlag(){
-
-let flag=document.createElement("div")
-flag.className="flag"
-
-let playerPos=-worldX+window.innerWidth*0.6
-flag.style.left=(playerPos+300)+"px"
-
-flag.innerText="🏁"
-
-world.appendChild(flag)
-
-}
-
-/* FYRVERKERI */
-
-function fireworks(){
-
-for(let i=0;i<25;i++){
-
-let star=document.createElement("div")
-star.className="fire"
-star.innerText="✨"
-
-star.style.left=(window.innerWidth/2+Math.random()*200-100)+"px"
-star.style.top=(window.innerHeight/2+Math.random()*200-100)+"px"
-
-document.body.appendChild(star)
-
-setTimeout(()=>star.remove(),800)
-
-}
-
-}
-
 /* SPELLOOP */
 
 function loop(){
 
-if(!paused){
-
 if(moving) worldX-=4
 
 vy-=0.6
+
 let bottom=parseFloat(player.style.bottom||80)
 bottom+=vy
 
@@ -524,35 +267,22 @@ world.style.left=worldX+"px"
 
 dog.style.left=(player.offsetLeft-90)+"px"
 
+/* KOLLISION VATTEN */
+
 const pr=player.getBoundingClientRect()
 
-document.querySelectorAll(".hedgehog").forEach(o=>{
+document.querySelectorAll(".water").forEach(w=>{
 
-const r=o.getBoundingClientRect()
+const r=w.getBoundingClientRect()
 
-if(pr.right>r.left && pr.left<r.right){
+if(pr.bottom>=r.top && pr.right>r.left && pr.left<r.right){
 
-showMath()
-o.remove()
-
-}
-
-})
-
-document.querySelectorAll(".flag").forEach(f=>{
-
-const r=f.getBoundingClientRect()
-
-if(pr.right>r.left && pr.left<r.right && !flagReached){
-
-flagReached=true
-fireworks()
+/* fall */
+vy=-10
 
 }
 
 })
-
-}
 
 requestAnimationFrame(loop)
 
@@ -562,4 +292,4 @@ loop()
 
 </script>
 </body>
-</html> 
+</html>
