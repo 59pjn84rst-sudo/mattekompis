@@ -3,44 +3,38 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mattekompis – Grafikläge</title>
+
+<title>Mattekompis – Grafikläge 22.1</title>
 
 <style>
 
-body{margin:0;overflow:hidden;background:linear-gradient(#7ecbff,#c8f6ff);font-family:sans-serif}
+*{
+margin:0;
+box-sizing:border-box;
+user-select:none;
+-webkit-user-select:none;
+-webkit-tap-highlight-color:transparent;
+}
+
+body{
+overflow:hidden;
+background:linear-gradient(#7ecbff,#c8f6ff);
+}
 
 /* SPEL */
 
-#game{position:relative;height:65vh;overflow:hidden}
-#world{position:absolute;bottom:0;left:0;height:100%;width:100000px}
-
-.ground{position:absolute;bottom:0;height:80px;width:100000px;background:#2ecc71}
-
-/* KULLAR */
-
-.hill{
-position:absolute;
-width:220px;
-height:120px;
-background:#27ae60;
-border-radius:200px 200px 0 0;
+#game{
+position:relative;
+height:65vh;
+overflow:hidden;
 }
 
-/* VATTEN */
-
-.water{
+#world{
 position:absolute;
 bottom:0;
-height:80px;
-background:#3498db;
-}
-
-/* BÅT */
-
-.boat{
-position:absolute;
-bottom:80px;
-font-size:40px;
+left:0;
+height:100%;
+width:100000px;
 }
 
 /* SPELARE */
@@ -80,10 +74,57 @@ width:80px;
 
 #dog img{width:100%}
 
+/* KULLAR */
+
+.hill{
+position:absolute;
+width:200px;
+height:120px;
+background:#27ae60;
+border-radius:200px 200px 0 0;
+}
+
+/* VATTEN */
+
+.water{
+position:absolute;
+bottom:0;
+height:80px;
+background:#3498db;
+}
+
+/* BÅT */
+
+.boat{
+position:absolute;
+bottom:80px;
+font-size:40px;
+}
+
 /* DEKOR */
 
 .tree{position:absolute;font-size:40px}
 .animal{position:absolute;font-size:30px}
+
+/* KONTROLLER */
+
+#controls{
+display:flex;
+justify-content:center;
+gap:20px;
+background:#1c2e4a;
+padding:10px;
+}
+
+button{
+font-size:28px;
+padding:12px 18px;
+border:none;
+border-radius:10px;
+background:#2f4b7c;
+color:white;
+touch-action:manipulation;
+}
 
 </style>
 </head>
@@ -91,13 +132,19 @@ width:80px;
 <body>
 
 <div id="game">
-<div id="world"><div class="ground"></div></div>
+<div id="world"></div>
 
-<div id="player"><div id="playerSprite"></div></div>
-<div id="dog"><img id="dogImg" src="dog-sit.png"></div>
+<div id="player">
+<div id="playerSprite"></div>
 </div>
 
-<div style="display:flex;justify-content:center;gap:20px;background:#1c2e4a;padding:10px">
+<div id="dog">
+<img id="dogImg" src="dog-sit.png">
+</div>
+
+</div>
+
+<div id="controls">
 <button id="jump">⬆️</button>
 <button id="right">➡️</button>
 </div>
@@ -111,8 +158,8 @@ width:80px;
 
 let worldX=0
 let vy=0
-let onGround=true
 let moving=false
+let onGround=true
 
 const world=document.getElementById("world")
 const player=document.getElementById("player")
@@ -123,68 +170,79 @@ const dogImg=document.getElementById("dogImg")
 const music=document.getElementById("music")
 const jumpSound=document.getElementById("jumpSound")
 
-let nextSpawn=400
+let nextX=300
 
 const animals=["🐒","🦉","🐝","🦄","🐜","🐙","🐳","🦀","🦑","🦕","🦖","🐍","🐅","🐆","🦓","🦍","🦧","🦒","🦘","🦌","🐈","🐩","🐓","🦩"]
 
+let hills=[]
+let waters=[]
+let boats=[]
+
 generateWorld()
 
-/* GENERERA VÄRLD */
+/* GENERERA */
 
 function generateWorld(){
 
 for(let i=0;i<60;i++){
 
-spawnHill()
-spawnWater()
+if(Math.random()<0.4) createHill()
+if(Math.random()<0.3) createWater()
+
 spawnDecor()
 
-nextSpawn+=300
+nextX+=300
 
 }
 
 }
 
-function spawnHill(){
-
-if(Math.random()<0.4){
+function createHill(){
 
 let h=document.createElement("div")
 h.className="hill"
-h.style.left=nextSpawn+"px"
+h.style.left=nextX+"px"
 h.style.bottom="80px"
 
 world.appendChild(h)
 
-}
+hills.push({
+x:nextX,
+width:200,
+height:120
+})
 
 }
 
-function spawnWater(){
+function createWater(){
 
-if(Math.random()<0.3){
-
-let width=120+Math.random()*200
+let width=150+Math.random()*200
 
 let w=document.createElement("div")
 w.className="water"
-w.style.left=nextSpawn+"px"
+w.style.left=nextX+"px"
 w.style.width=width+"px"
 
 world.appendChild(w)
 
-/* båt */
+waters.push({
+x:nextX,
+width:width
+})
 
-if(width>200){
+if(width>220){
 
 let b=document.createElement("div")
 b.className="boat"
 b.innerText="⛵"
-b.style.left=(nextSpawn+width/2-20)+"px"
+b.style.left=(nextX+width/2-20)+"px"
 
 world.appendChild(b)
 
-}
+boats.push({
+x:nextX+width/2-20,
+width:40
+})
 
 }
 
@@ -192,28 +250,24 @@ world.appendChild(b)
 
 function spawnDecor(){
 
-/* träd */
-
 if(Math.random()<0.5){
 
 let t=document.createElement("div")
 t.className="tree"
 t.innerText="🌳"
-t.style.left=nextSpawn+"px"
+t.style.left=nextX+"px"
 t.style.bottom="80px"
 
 world.appendChild(t)
 
 }
 
-/* djur */
-
 if(Math.random()<0.5){
 
 let a=document.createElement("div")
 a.className="animal"
 a.innerText=animals[Math.floor(Math.random()*animals.length)]
-a.style.left=(nextSpawn+50)+"px"
+a.style.left=(nextX+50)+"px"
 a.style.bottom="80px"
 
 world.appendChild(a)
@@ -245,7 +299,55 @@ jumpSound.play()
 }
 }
 
-/* SPELLOOP */
+/* FYSIK */
+
+function getGroundHeight(px){
+
+let ground=80
+
+// kullar
+hills.forEach(h=>{
+
+if(px>h.x && px<h.x+h.width){
+
+let center=h.x+h.width/2
+let dist=Math.abs(px-center)
+
+let height=h.height*(1-(dist/(h.width/2)))
+
+ground=80+height
+
+}
+
+})
+
+// vatten (fall)
+waters.forEach(w=>{
+
+if(px>w.x && px<w.x+w.width){
+
+ground=-100 // fall ner
+
+}
+
+})
+
+// båt
+boats.forEach(b=>{
+
+if(px>b.x && px<b.x+b.width){
+
+ground=80
+
+}
+
+})
+
+return ground
+
+}
+
+/* LOOP */
 
 function loop(){
 
@@ -253,36 +355,24 @@ if(moving) worldX-=4
 
 vy-=0.6
 
+let px = -worldX + window.innerWidth*0.4
+let groundHeight = getGroundHeight(px)
+
 let bottom=parseFloat(player.style.bottom||80)
 bottom+=vy
 
-if(bottom<=80){
-bottom=80
+if(bottom<=groundHeight){
+bottom=groundHeight
 vy=0
 onGround=true
+}else{
+onGround=false
 }
 
 player.style.bottom=bottom+"px"
 world.style.left=worldX+"px"
 
 dog.style.left=(player.offsetLeft-90)+"px"
-
-/* KOLLISION VATTEN */
-
-const pr=player.getBoundingClientRect()
-
-document.querySelectorAll(".water").forEach(w=>{
-
-const r=w.getBoundingClientRect()
-
-if(pr.bottom>=r.top && pr.right>r.left && pr.left<r.right){
-
-/* fall */
-vy=-10
-
-}
-
-})
 
 requestAnimationFrame(loop)
 
