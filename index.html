@@ -3,8 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Mattekompis v24</title>
+<title>Mattekompis v25</title>
 
 <style>
 
@@ -19,7 +18,6 @@ user-select:none;
 body{
 overflow:hidden;
 background:linear-gradient(#7ecbff,#c8f6ff);
-font-family:sans-serif;
 }
 
 /* SPEL */
@@ -44,8 +42,8 @@ width:200000px;
 position:absolute;
 left:40%;
 bottom:80px;
-width:82px;
-height:82px;
+width:80px;
+height:80px;
 z-index:5;
 }
 
@@ -57,13 +55,13 @@ background:url("player-idle.PNG") center/contain no-repeat;
 
 .walk{
 background:url("player-walk.PNG");
-background-size:auto 82px;
+background-size:auto 80px;
 animation:walk .6s steps(6) infinite;
 }
 
 @keyframes walk{
 from{background-position:0}
-to{background-position:-492px}
+to{background-position:-480px}
 }
 
 /* HUND */
@@ -86,29 +84,19 @@ object-fit:contain;
 .segment{position:absolute}
 
 .ground{background:#2ecc71;}
+.hill{background:linear-gradient(#2ecc71,#27ae60);}
+.water{background:#3498db;}
 
-.hill{
-background:linear-gradient(#2ecc71,#27ae60);
-}
-
-.water{
-background:#3498db;
-}
-
-/* BÅT */
-
-.boat{
-position:absolute;
-bottom:80px;
-font-size:40px;
-transform:scale(2);
+.island{
+background:#2ecc71;
+border-radius:20px;
 }
 
 /* TRÄD */
 
-.tree,.palm{
+.palm{
 position:absolute;
-font-size:60px;
+font-size:50px;
 z-index:2;
 }
 
@@ -116,7 +104,7 @@ z-index:2;
 
 .dino{
 position:absolute;
-font-size:50px;
+font-size:45px;
 z-index:1;
 }
 
@@ -166,11 +154,7 @@ let worldX=0
 let velocity=0
 let vy=0
 let onGround=true
-
 let moveInput=0
-let onBoat=null
-
-let lastPx=0
 
 const world=document.getElementById("world")
 const player=document.getElementById("player")
@@ -179,25 +163,38 @@ const dogImg=document.getElementById("dogImg")
 const sprite=document.getElementById("playerSprite")
 
 let segments=[]
-let boats=[]
 
-/* GENERATE */
+/* GENERERA – SÄKER START */
 
 let x=0
+
+// start alltid på mark
+for(let i=0;i<5;i++){
+createGround(220)
+x+=240
+}
 
 for(let i=0;i<80;i++){
 
 let r=Math.random()
 
-if(r<0.5) createGround(220)
-else if(r<0.75) createHill(220)
-else createWater(300)
+if(r<0.5){
+createGround(220)
+}
+else if(r<0.75){
+createHill(220)
+}
+else{
+createWaterWithIslands(400)
+}
 
 spawnDecor(x)
 
 x+=260
 
 }
+
+/* MARK */
 
 function createGround(w){
 
@@ -210,7 +207,10 @@ d.style.width=w+"px"
 d.style.height="80px"
 d.style.bottom="0"
 world.appendChild(d)
+
 }
+
+/* KULLAR */
 
 function createHill(w){
 
@@ -232,9 +232,12 @@ d.style.height="80px"
 d.style.bottom="80px"
 d.style.borderRadius="50% 50% 0 0"
 world.appendChild(d)
+
 }
 
-function createWater(w){
+/* VATTEN + ÖAR */
+
+function createWaterWithIslands(w){
 
 segments.push({type:"water",x:x,width:w})
 
@@ -246,51 +249,40 @@ d.style.height="80px"
 d.style.bottom="0"
 world.appendChild(d)
 
-/* boat */
+// skapa öar
+let islandCount=2+Math.floor(Math.random()*2)
 
-let bx=x+w/2-80
+for(let i=0;i<islandCount;i++){
 
-let b=document.createElement("div")
-b.className="boat"
-b.innerText="⛵"
-b.style.left=bx+"px"
-world.appendChild(b)
+let ix = x + (i+1)*(w/(islandCount+1)) - 40
 
-boats.push({x:bx,width:160,speed:1.2})
+segments.push({type:"island",x:ix,width:80})
+
+let island=document.createElement("div")
+island.className="segment island"
+island.style.left=ix+"px"
+island.style.width="80px"
+island.style.height="20px"
+island.style.bottom="80px"
+world.appendChild(island)
+
+// palmer på ö
+let palm=document.createElement("div")
+palm.className="palm"
+palm.innerText="🌴"
+palm.style.left=(ix+20)+"px"
+palm.style.bottom="100px"
+world.appendChild(palm)
+
 }
 
-/* DECOR */
+}
+
+/* DEKOR */
 
 function spawnDecor(px){
 
-let hasTree=false
-
-if(Math.random()<0.25){
-
-hasTree=true
-
-let count=2+Math.floor(Math.random()*2)
-
-for(let i=0;i<count;i++){
-
-let el=document.createElement("div")
-
-if(Math.random()<0.8){
-el.className="palm"
-el.innerText="🌴"
-}else{
-el.className="tree"
-el.innerText="🌳"
-}
-
-el.style.left=(px+i*40)+"px"
-el.style.bottom="80px"
-
-world.appendChild(el)
-}
-}
-
-if(!hasTree && Math.random()<0.3){
+if(Math.random()<0.3){
 
 let d=document.createElement("div")
 d.className="dino"
@@ -298,7 +290,9 @@ d.innerText=Math.random()<0.5?"🦖":"🦕"
 d.style.left=(px+60)+"px"
 d.style.bottom="80px"
 world.appendChild(d)
+
 }
+
 }
 
 /* INPUT */
@@ -321,49 +315,42 @@ onGround=false
 }
 }
 
-/* TERRAIN HEIGHT */
+/* MARK */
 
 function getGround(px){
-
-onBoat=null
-
-for(let b of boats){
-if(px>=b.x && px<=b.x+b.width){
-onBoat=b
-return {type:"boat", y:80, speed:b.speed}
-}
-}
 
 for(let s of segments){
 
 if(px>=s.x && px<=s.x+s.width){
 
-if(s.type==="ground") return {type:"ground",y:80}
+if(s.type==="ground") return 80
 
 if(s.type==="hill"){
 let t=(px-s.x)/s.width
-let height=60*Math.sin(t*Math.PI)
-return {type:"hill",y:80+height}
+return 80 + 60*Math.sin(t*Math.PI)
 }
+
+if(s.type==="island") return 100
 
 if(s.type==="water") return null
+
 }
 }
 
-return {type:"ground",y:80}
+return 80
 }
 
 /* LOOP */
 
 function loop(){
 
-/* acceleration */
-let targetSpeed = moveInput * 4
-velocity += (targetSpeed - velocity) * 0.2
+// acceleration
+let target=moveInput*4
+velocity += (target-velocity)*0.2
 
 worldX -= velocity
 
-/* animation */
+// animation
 if(Math.abs(velocity)>0.2){
 sprite.classList.add("walk")
 dogImg.src="dog-walk.png"
@@ -372,7 +359,7 @@ sprite.classList.remove("walk")
 dogImg.src="dog-sit.png"
 }
 
-/* gravity */
+// gravity
 vy -= 0.6
 
 let px=-worldX + window.innerWidth*0.4
@@ -384,19 +371,17 @@ if(ground===null){
 bottom += vy
 onGround=false
 }else{
-bottom = ground.y
+if(bottom<=ground){
+bottom=ground
 vy=0
 onGround=true
-
-if(ground.type==="boat"){
-worldX -= ground.speed
 }
 }
 
-/* apply */
+// apply
 player.style.bottom=bottom+"px"
 
-/* dog follow */
+// dog follow
 dog.style.left=(player.offsetLeft-30)+"px"
 dog.style.bottom=bottom+"px"
 
@@ -406,8 +391,8 @@ dog.style.transform="translateY(-10px)"
 dog.style.transform="translateY(0)"
 }
 
-/* smooth camera */
-world.style.left += (worldX - parseFloat(world.style.left||0)) * 0.2 + "px"
+// camera
+world.style.left = worldX + "px"
 
 requestAnimationFrame(loop)
 
