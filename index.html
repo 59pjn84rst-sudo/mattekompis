@@ -3,13 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mattekompis v29</title>
+<title>Mattekompis v30</title>
 
 <style>
-
-*{margin:0;box-sizing:border-box;}
-body{overflow:hidden;background:linear-gradient(#7ecbff,#c8f6ff);}
-
+body{margin:0;overflow:hidden;background:linear-gradient(#7ecbff,#c8f6ff);}
 #game{position:relative;height:65vh;overflow:hidden;}
 #world{position:absolute;bottom:0;left:0;height:100%;width:20000px;}
 
@@ -23,8 +20,7 @@ z-index:5;
 }
 
 #playerSprite{
-width:100%;
-height:100%;
+width:100%;height:100%;
 background:url("player-idle.PNG") center/contain no-repeat;
 }
 
@@ -39,35 +35,24 @@ from{background-position:0}
 to{background-position:-960px}
 }
 
-#dog{position:absolute;width:60px;height:60px;z-index:4;}
+#dog{position:absolute;width:60px;height:60px;}
 #dog img{width:100%;height:100%;}
 
-/* TERRÄNG */
-
-.segment{position:absolute;height:80px;}
-
-.ground{background:#2ecc71;}
-.water{background:#3498db;}
-.lava{background:linear-gradient(#ff3c00,#ff9a00);}
-.island{background:#ffe066;height:40px;border-radius:20px;}
-.hill{background:linear-gradient(#2ecc71,#27ae60);height:80px;}
-
-/* PALM */
-.palm{position:absolute;font-size:120px;}
-
-/* 67 */
+/* visuellt bara */
+.ground{position:absolute;height:80px;background:#2ecc71;}
+.water{position:absolute;height:80px;background:#3498db;}
+.lava{position:absolute;height:80px;background:#ff5e00;}
+.island{position:absolute;height:40px;background:#ffe066;border-radius:20px;}
 .platform67{position:absolute;font-size:70px;}
 
 #controls{
 display:flex;justify-content:center;gap:20px;
 background:#1c2e4a;padding:10px;
 }
-
 button{
 font-size:28px;padding:12px;border-radius:10px;
 background:#2f4b7c;color:white;border:none;
 }
-
 </style>
 </head>
 
@@ -88,7 +73,7 @@ background:#2f4b7c;color:white;border:none;
 
 <script>
 
-/* STATE */
+/* ===== STATE ===== */
 
 let worldX=0, vx=0, vy=0
 let move=0, onGround=true
@@ -104,124 +89,89 @@ let platforms67=[]
 
 let x=0
 
-/* ===== BYGG BANAN SOM I DIN SKISS ===== */
+/* ===== BANBYGG ===== */
 
-/* START */
-createHill(200)
-x+=220
-createGround(200)
-x+=220
+// start
+addGround(x,400); x+=400
 
-/* VATTEN + ÖAR */
-createWater(300)
-createIsland(x+100)
-createIsland(x+200)
-x+=320
+// kulle
+segments.push({type:"hill",x:x,width:300})
+addGround(x,300); x+=300
 
-/* KULLE */
-createHill(250)
-x+=260
+// vatten + öar
+addWater(x,300)
+addIsland(x+100)
+addIsland(x+200)
+x+=300
 
-/* HÅL */
-createHole(200)
-x+=220
+// lava + 67
+addLava(x,300)
+add67(x+100)
+x+=300
 
-/* LAVA + 67 */
-createLava(300)
-create67(x+100)
-x+=320
-
-/* VULKAN */
-createBigHill(300)
-createLava(100, x+100)
-x+=320
-
-/* SLUT */
-createGround(500)
+// slut
+addGround(x,400)
 
 /* ===== CREATE ===== */
 
-function createGround(w){
+function addGround(x,w){
 segments.push({type:"ground",x:x,width:w})
-addDiv("ground",x,w,0)
+let d=document.createElement("div")
+d.className="ground"
+d.style.left=x+"px"
+d.style.width=w+"px"
+d.style.bottom="0"
+world.appendChild(d)
 }
 
-function createHill(w){
-segments.push({type:"hill",x:x,width:w})
-addDiv("hill",x,w,80)
-}
-
-function createBigHill(w){
-segments.push({type:"hill",x:x,width:w,height:100})
-addDiv("hill",x,w,80)
-}
-
-function createWater(w){
+function addWater(x,w){
 segments.push({type:"water",x:x,width:w})
-addDiv("water",x,w,0)
+let d=document.createElement("div")
+d.className="water"
+d.style.left=x+"px"
+d.style.width=w+"px"
+d.style.bottom="0"
+world.appendChild(d)
 }
 
-function createIsland(px){
+function addLava(x,w){
+segments.push({type:"lava",x:x,width:w})
+let d=document.createElement("div")
+d.className="lava"
+d.style.left=x+"px"
+d.style.width=w+"px"
+d.style.bottom="0"
+world.appendChild(d)
+}
+
+function addIsland(px){
 segments.push({type:"island",x:px,width:120})
-
-addDiv("island",px,120,80)
-
-let palm=document.createElement("div")
-palm.className="palm"
-palm.innerText="🌴"
-palm.style.left=(px-20)+"px"
-palm.style.bottom="120px"
-world.appendChild(palm)
+let d=document.createElement("div")
+d.className="island"
+d.style.left=px+"px"
+d.style.width="120px"
+d.style.bottom="80px"
+world.appendChild(d)
 }
 
-function createHole(w){
-segments.push({type:"hole",x:x,width:w})
-}
-
-function createLava(w, customX=null){
-
-let pos = customX!==null ? customX : x
-
-segments.push({type:"lava",x:pos,width:w})
-addDiv("lava",pos,w,0)
-}
-
-function create67(px){
-
+function add67(px){
 let el=document.createElement("div")
 el.className="platform67"
 el.innerText="67"
 el.style.left=px+"px"
 el.style.bottom="80px"
-
 world.appendChild(el)
-
 platforms67.push({x:px,width:80,speed:2})
 }
 
-function addDiv(type,x,w,bottom){
-
-let d=document.createElement("div")
-d.className="segment "+type
-d.style.left=x+"px"
-d.style.width=w+"px"
-d.style.bottom=bottom+"px"
-world.appendChild(d)
-
-}
-
-/* INPUT */
+/* ===== INPUT ===== */
 
 function stop(){move=0}
-
 right.onpointerdown=()=>move=1
 left.onpointerdown=()=>move=-1
-
 right.onpointerup=stop
 left.onpointerup=stop
-
 window.addEventListener("pointerup",stop)
-window.addEventListener("touchend",stop)
 
 jump.onpointerdown=()=>{
 if(onGround){
@@ -230,17 +180,18 @@ onGround=false
 }
 }
 
-/* MARK */
+/* ===== MARK ===== */
 
 function getGround(px){
 
-// 67
+// 67 först
 for(let p of platforms67){
 if(px>=p.x && px<=p.x+p.width){
 return 80
 }
 }
 
+// segment
 for(let s of segments){
 
 if(px>=s.x && px<=s.x+s.width){
@@ -249,12 +200,12 @@ if(s.type==="ground") return 80
 
 if(s.type==="hill"){
 let t=(px-s.x)/s.width
-return 80 + 60*Math.sin(t*Math.PI)
+return 80 + 80*Math.sin(t*Math.PI)
 }
 
 if(s.type==="island") return 120
 
-if(s.type==="water" || s.type==="hole" || s.type==="lava"){
+if(s.type==="water" || s.type==="lava"){
 return null
 }
 }
@@ -263,13 +214,15 @@ return null
 return 80
 }
 
-/* LOOP */
+/* ===== LOOP ===== */
 
 function loop(){
 
+// rörelse
 vx += (move*5 - vx)*0.2
 worldX -= vx
 
+// animation
 if(Math.abs(vx)>0.5){
 sprite.classList.add("walk")
 dogImg.src="dog-walk.png"
@@ -278,6 +231,7 @@ sprite.classList.remove("walk")
 dogImg.src="dog-sit.png"
 }
 
+// gravity
 vy -= 0.7
 
 let px=-worldX + window.innerWidth*0.4
@@ -285,6 +239,7 @@ let ground=getGround(px)
 
 let bottom=parseFloat(player.style.bottom||80)
 
+// FALL
 if(ground===null){
 bottom += vy
 onGround=false
@@ -296,20 +251,21 @@ onGround=true
 }
 }
 
+// apply
 player.style.bottom=bottom+"px"
 world.style.left=worldX+"px"
 
+// hund
 dog.style.left=(player.offsetLeft-60)+"px"
 dog.style.bottom=bottom+"px"
 
-/* 67 rör sig */
+// 67 rör sig
 platforms67.forEach(p=>p.x-=p.speed)
 document.querySelectorAll(".platform67").forEach((el,i)=>{
 el.style.left=platforms67[i].x+"px"
 })
 
 requestAnimationFrame(loop)
-
 }
 
 loop()
