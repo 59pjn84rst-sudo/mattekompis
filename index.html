@@ -4,14 +4,24 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Mattekompis v31</title>
+<title>Mattekompis</title>
 
 <style>
-body{
+
+/* TA BORT ALL MARKERING */
+*{
 margin:0;
+box-sizing:border-box;
+-webkit-user-select:none;
+-webkit-tap-highlight-color:transparent;
+}
+
+body{
 overflow:hidden;
 background:linear-gradient(#7ecbff,#c8f6ff);
 }
+
+/* SPEL */
 
 #game{
 position:relative;
@@ -20,6 +30,7 @@ overflow:hidden;
 }
 
 /* MARK */
+
 #ground{
 position:absolute;
 bottom:0;
@@ -29,6 +40,7 @@ background:#2ecc71;
 }
 
 /* SPELARE */
+
 #player{
 position:absolute;
 left:40%;
@@ -55,17 +67,20 @@ to{background-position:-960px}
 }
 
 /* HUND */
+
 #dog{
 position:absolute;
 width:60px;
 height:60px;
 }
+
 #dog img{
 width:100%;
 height:100%;
 }
 
 /* KONTROLLER */
+
 #controls{
 display:flex;
 justify-content:center;
@@ -81,7 +96,14 @@ border:none;
 border-radius:10px;
 background:#2f4b7c;
 color:white;
+outline:none;
+-webkit-tap-highlight-color:transparent;
 }
+
+button:focus{
+outline:none;
+}
+
 </style>
 </head>
 
@@ -121,7 +143,7 @@ const dog = document.getElementById("dog")
 const dogImg = document.getElementById("dogImg")
 const sprite = document.getElementById("playerSprite")
 
-/* ===== INPUT (SUPERSTABIL) ===== */
+/* ===== INPUT ===== */
 
 function stopMove(){
 move = 0
@@ -133,7 +155,7 @@ left.addEventListener("pointerdown", ()=>move = -1)
 right.addEventListener("pointerup", stopMove)
 left.addEventListener("pointerup", stopMove)
 
-/* KRITISKT för mobil */
+/* VIKTIGT FÖR MOBIL */
 window.addEventListener("pointerup", stopMove)
 window.addEventListener("touchend", stopMove)
 window.addEventListener("blur", stopMove)
@@ -150,7 +172,7 @@ onGround = false
 
 function loop(){
 
-/* RÖRELSE – STOPPAR DIREKT */
+/* RÖRELSE */
 vx = move * 5
 
 /* ANIMATION */
@@ -178,7 +200,7 @@ onGround = true
 /* APPLY */
 player.style.bottom = bottom + "px"
 
-/* DOG */
+/* HUND */
 dog.style.left = (player.offsetLeft - 60) + "px"
 dog.style.bottom = bottom + "px"
 
