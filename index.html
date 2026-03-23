@@ -4,23 +4,32 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Mattekompis v27</title>
+<title>Mattekompis v28</title>
 
 <style>
 
 *{margin:0;box-sizing:border-box;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;}
-
 body{overflow:hidden;background:linear-gradient(#7ecbff,#c8f6ff);}
 
 /* SPEL */
-
 #game{position:relative;height:65vh;overflow:hidden;}
 #world{position:absolute;bottom:0;left:0;height:100%;width:50000px;}
 
 /* SPELARE */
+#player{
+position:absolute;
+left:40%;
+bottom:80px;
+width:160px;
+height:160px;
+z-index:5;
+}
 
-#player{position:absolute;left:40%;bottom:80px;width:160px;height:160px;z-index:5;}
-#playerSprite{width:100%;height:100%;background:url("player-idle.PNG") center/contain no-repeat;}
+#playerSprite{
+width:100%;
+height:100%;
+background:url("player-idle.PNG") center/contain no-repeat;
+}
 
 .walk{
 background:url("player-walk.PNG") left center;
@@ -34,39 +43,42 @@ to{background-position:-960px}
 }
 
 /* HUND */
-
 #dog{position:absolute;width:60px;height:60px;z-index:4;}
-#dog img{width:100%;height:100%;object-fit:contain;}
+#dog img{width:100%;height:100%;}
 
-/* 67 */
-
-#enemy{
+/* 67 PLATTFORM */
+.platform67{
 position:absolute;
 bottom:80px;
-font-size:80px;
+font-size:60px;
 z-index:3;
 }
 
 /* TERRÄNG */
-
 .segment{position:absolute}
-
 .ground{background:#2ecc71;height:80px;}
 .hill{background:linear-gradient(#2ecc71,#27ae60);height:80px;}
 .water{background:#3498db;height:80px;}
-.hole{background:transparent;height:80px;}
-.lava{
-background:linear-gradient(#ff3c00,#ff9a00);
-height:80px;
+.lava{background:linear-gradient(#ff3c00,#ff9a00);height:80px;}
+
+.island{
+background:#ffe066;
+border-radius:20px;
+height:40px;
+}
+
+/* PALM */
+.palm{
+position:absolute;
+font-size:120px;
+z-index:2;
 }
 
 /* KONTROLLER */
-
 #controls{
 display:flex;justify-content:center;gap:20px;
 background:#1c2e4a;padding:10px;
 }
-
 button{
 font-size:28px;padding:12px 18px;border:none;
 border-radius:10px;background:#2f4b7c;color:white;
@@ -82,8 +94,6 @@ border-radius:10px;background:#2f4b7c;color:white;
 
 <div id="player"><div id="playerSprite"></div></div>
 <div id="dog"><img id="dogImg" src="dog-sit.png"></div>
-<div id="enemy">67</div>
-
 </div>
 
 <div id="controls">
@@ -95,21 +105,19 @@ border-radius:10px;background:#2f4b7c;color:white;
 <script>
 
 /* STATE */
-
 let worldX=0, vx=0, vy=0
 let move=0, onGround=true
 
+const world=document.getElementById("world")
 const player=document.getElementById("player")
 const dog=document.getElementById("dog")
 const dogImg=document.getElementById("dogImg")
 const sprite=document.getElementById("playerSprite")
-const world=document.getElementById("world")
-const enemy=document.getElementById("enemy")
 
 let segments=[]
+let platforms67=[]
 
 /* GENERERA BANA */
-
 let x=0
 
 // säker start
@@ -122,14 +130,21 @@ for(let i=0;i<60;i++){
 
 let r=Math.random()
 
-if(r<0.4) createGround(250)
-else if(r<0.6) createHill(250)
-else if(r<0.75) createWater(250)
-else if(r<0.9) createHole(180)
-else createLava(200)
+if(r<0.5){
+createGround(250)
+}
+else if(r<0.7){
+createHill(250)
+}
+else if(r<0.85){
+createWaterWithIslands(300)
+}
+else{
+createLava(300)
+create67(x+50)
+}
 
-x+=300
-
+x+=320
 }
 
 /* SKAPA */
@@ -157,7 +172,8 @@ d.style.borderRadius="50% 50% 0 0"
 world.appendChild(d)
 }
 
-function createWater(w){
+function createWaterWithIslands(w){
+
 segments.push({type:"water",x:x,width:w})
 
 let d=document.createElement("div")
@@ -166,13 +182,36 @@ d.style.left=x+"px"
 d.style.width=w+"px"
 d.style.bottom="0"
 world.appendChild(d)
-}
 
-function createHole(w){
-segments.push({type:"hole",x:x,width:w})
+/* öar */
+let count=2
+
+for(let i=0;i<count;i++){
+
+let ix=x + (i+1)*(w/(count+1)) - 60
+
+segments.push({type:"island",x:ix,width:120})
+
+let island=document.createElement("div")
+island.className="segment island"
+island.style.left=ix+"px"
+island.style.width="120px"
+island.style.bottom="80px"
+world.appendChild(island)
+
+/* palm */
+let palm=document.createElement("div")
+palm.className="palm"
+palm.innerText="🌴"
+palm.style.left=(ix-20)+"px"
+palm.style.bottom="120px"
+world.appendChild(palm)
+
+}
 }
 
 function createLava(w){
+
 segments.push({type:"lava",x:x,width:w})
 
 let d=document.createElement("div")
@@ -181,6 +220,21 @@ d.style.left=x+"px"
 d.style.width=w+"px"
 d.style.bottom="0"
 world.appendChild(d)
+}
+
+/* 67 som plattform */
+
+function create67(px){
+
+let el=document.createElement("div")
+el.className="platform67"
+el.innerText="67"
+el.style.left=px+"px"
+
+world.appendChild(el)
+
+platforms67.push({x:px,width:80,speed:2})
+
 }
 
 /* INPUT */
@@ -207,6 +261,13 @@ onGround=false
 
 function getGround(px){
 
+// 67 plattform
+for(let p of platforms67){
+if(px>=p.x && px<=p.x+p.width){
+return 80
+}
+}
+
 for(let s of segments){
 
 if(px>=s.x && px<=s.x+s.width){
@@ -218,10 +279,9 @@ let t=(px-s.x)/s.width
 return 80 + 60*Math.sin(t*Math.PI)
 }
 
-if(s.type==="water" || s.type==="hole") return null
+if(s.type==="island") return 120
 
-if(s.type==="lava") return "lava"
-
+if(s.type==="water" || s.type==="lava") return null
 }
 }
 
@@ -229,8 +289,6 @@ return 80
 }
 
 /* LOOP */
-
-let enemyX=2000
 
 function loop(){
 
@@ -255,15 +313,8 @@ let ground=getGround(px)
 
 let bottom=parseFloat(player.style.bottom||80)
 
-/* lava */
-if(ground==="lava"){
-bottom=80
-vy=0
-worldX=0 // reset
-}
-
-/* normal */
-else if(ground===null){
+/* FALL */
+if(ground===null){
 bottom += vy
 onGround=false
 }else{
@@ -278,23 +329,18 @@ onGround=true
 player.style.bottom=bottom+"px"
 world.style.left=worldX+"px"
 
-/* dog */
+/* hund */
 dog.style.left=(player.offsetLeft-60)+"px"
 dog.style.bottom=bottom+"px"
 
-if(!onGround){
-dog.style.transform="translateY(-15px)"
-}else{
-dog.style.transform="translateY(0)"
-}
+/* 67 rör sig */
+platforms67.forEach(p=>{
+p.x -= p.speed
+})
 
-/* 67 enemy */
-enemyX -= 2
-if(enemyX < worldX-500){
-enemyX = worldX + window.innerWidth + 500
-}
-
-enemy.style.left = enemyX + "px"
+document.querySelectorAll(".platform67").forEach((el,i)=>{
+el.style.left = platforms67[i].x + "px"
+})
 
 requestAnimationFrame(loop)
 
