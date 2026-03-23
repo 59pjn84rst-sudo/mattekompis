@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Mattekompis 23.2</title>
+<title>Mattekompis v24</title>
 
 <style>
 
@@ -19,6 +19,7 @@ user-select:none;
 body{
 overflow:hidden;
 background:linear-gradient(#7ecbff,#c8f6ff);
+font-family:sans-serif;
 }
 
 /* SPEL */
@@ -69,7 +70,6 @@ to{background-position:-492px}
 
 #dog{
 position:absolute;
-bottom:80px;
 width:30px;
 height:30px;
 z-index:4;
@@ -81,7 +81,7 @@ height:100%;
 object-fit:contain;
 }
 
-/* MARK */
+/* TERRÄNG */
 
 .segment{position:absolute}
 
@@ -92,7 +92,7 @@ background:linear-gradient(#2ecc71,#27ae60);
 }
 
 .water{
-background:linear-gradient(90deg,#3498db,#5dade2,#3498db);
+background:#3498db;
 }
 
 /* BÅT */
@@ -112,7 +112,7 @@ font-size:60px;
 z-index:2;
 }
 
-/* DINOSAURIER */
+/* DINO */
 
 .dino{
 position:absolute;
@@ -160,19 +160,28 @@ touch-action:manipulation;
 
 <script>
 
-/* VARIABLER */
+/* STATE */
 
-let worldX=0, vy=0, onGround=true, moveDir=0
+let worldX=0
+let velocity=0
+let vy=0
+let onGround=true
+
+let moveInput=0
 let onBoat=null
+
+let lastPx=0
 
 const world=document.getElementById("world")
 const player=document.getElementById("player")
 const dog=document.getElementById("dog")
 const dogImg=document.getElementById("dogImg")
+const sprite=document.getElementById("playerSprite")
 
-let segments=[], boats=[]
+let segments=[]
+let boats=[]
 
-/* GENERERA */
+/* GENERATE */
 
 let x=0
 
@@ -190,8 +199,6 @@ x+=260
 
 }
 
-/* MARK */
-
 function createGround(w){
 
 segments.push({type:"ground",x:x,width:w})
@@ -203,14 +210,12 @@ d.style.width=w+"px"
 d.style.height="80px"
 d.style.bottom="0"
 world.appendChild(d)
-
 }
 
 function createHill(w){
 
 segments.push({type:"hill",x:x,width:w})
 
-// mark under
 let base=document.createElement("div")
 base.className="segment ground"
 base.style.left=x+"px"
@@ -227,7 +232,6 @@ d.style.height="80px"
 d.style.bottom="80px"
 d.style.borderRadius="50% 50% 0 0"
 world.appendChild(d)
-
 }
 
 function createWater(w){
@@ -242,7 +246,7 @@ d.style.height="80px"
 d.style.bottom="0"
 world.appendChild(d)
 
-/* båt */
+/* boat */
 
 let bx=x+w/2-80
 
@@ -250,14 +254,12 @@ let b=document.createElement("div")
 b.className="boat"
 b.innerText="⛵"
 b.style.left=bx+"px"
-
 world.appendChild(b)
 
 boats.push({x:bx,width:160,speed:1.2})
-
 }
 
-/* DEKOR */
+/* DECOR */
 
 function spawnDecor(px){
 
@@ -285,11 +287,9 @@ el.style.left=(px+i*40)+"px"
 el.style.bottom="80px"
 
 world.appendChild(el)
-
 }
 }
 
-// dinos only on flat ground without trees
 if(!hasTree && Math.random()<0.3){
 
 let d=document.createElement("div")
@@ -297,37 +297,22 @@ d.className="dino"
 d.innerText=Math.random()<0.5?"🦖":"🦕"
 d.style.left=(px+60)+"px"
 d.style.bottom="80px"
-
 world.appendChild(d)
-
+}
 }
 
-}
+/* INPUT */
 
-/* KONTROLLER */
+function stopMove(){ moveInput=0 }
 
-function stopMove(){
-moveDir=0
-dogImg.src="dog-sit.png"
-}
-
-right.onpointerdown=()=>{
-moveDir=1
-dogImg.src="dog-walk.png"
-}
-
-left.onpointerdown=()=>{
-moveDir=-1
-dogImg.src="dog-walk.png"
-}
+right.onpointerdown=()=>moveInput=1
+left.onpointerdown=()=>moveInput=-1
 
 right.onpointerup=stopMove
 left.onpointerup=stopMove
 
 window.addEventListener("pointerup",stopMove)
-window.addEventListener("pointercancel",stopMove)
 window.addEventListener("touchend",stopMove)
-window.addEventListener("blur",stopMove)
 
 jump.onpointerdown=()=>{
 if(onGround){
@@ -336,119 +321,93 @@ onGround=false
 }
 }
 
-/* KULLAR */
-
-function hillHeight(px,s){
-let c=s.x+s.width/2
-let sigma=s.width/4
-let d=px-c
-return 80+60*Math.exp(-(d*d)/(2*sigma*sigma))
-}
-
-/* MARK */
+/* TERRAIN HEIGHT */
 
 function getGround(px){
 
-let ground=null
 onBoat=null
 
-// boat first
 for(let b of boats){
 if(px>=b.x && px<=b.x+b.width){
 onBoat=b
-return 80
+return {type:"boat", y:80, speed:b.speed}
 }
 }
 
-// terrain
 for(let s of segments){
 
 if(px>=s.x && px<=s.x+s.width){
 
-if(s.type==="ground") return 80
-if(s.type==="hill") return hillHeight(px,s)
+if(s.type==="ground") return {type:"ground",y:80}
+
+if(s.type==="hill"){
+let t=(px-s.x)/s.width
+let height=60*Math.sin(t*Math.PI)
+return {type:"hill",y:80+height}
+}
+
 if(s.type==="water") return null
-
+}
 }
 
-}
-
-return 80
+return {type:"ground",y:80}
 }
 
 /* LOOP */
 
 function loop(){
 
-if(moveDir!==0){
-worldX-=moveDir*4
+/* acceleration */
+let targetSpeed = moveInput * 4
+velocity += (targetSpeed - velocity) * 0.2
+
+worldX -= velocity
+
+/* animation */
+if(Math.abs(velocity)>0.2){
+sprite.classList.add("walk")
+dogImg.src="dog-walk.png"
+}else{
+sprite.classList.remove("walk")
+dogImg.src="dog-sit.png"
 }
 
-// move boats
-boats.forEach(b=>b.x+=b.speed)
-
-vy-=0.6
+/* gravity */
+vy -= 0.6
 
 let px=-worldX + window.innerWidth*0.4
 let ground=getGround(px)
 
 let bottom=parseFloat(player.style.bottom||80)
-let prevBottom=bottom
 
-bottom+=vy
-
-// BOAT LANDING
-if(onBoat){
-
-let boatTop=80
-
-if(prevBottom>=boatTop && bottom<=boatTop){
-
-bottom=boatTop
+if(ground===null){
+bottom += vy
+onGround=false
+}else{
+bottom = ground.y
 vy=0
 onGround=true
 
-// follow boat
-worldX-=onBoat.speed
-
-}else{
-onGround=false
+if(ground.type==="boat"){
+worldX -= ground.speed
+}
 }
 
-}
-
-// GROUND
-else if(ground!==null){
-
-if(bottom<=ground && vy<=0){
-
-bottom=ground
-vy=0
-onGround=true
-
-}else{
-onGround=false
-}
-
-}
-
-// FALL
-else{
-onGround=false
-}
-
+/* apply */
 player.style.bottom=bottom+"px"
-world.style.left=worldX+"px"
 
-// DOG FOLLOW
-dog.style.left=(player.offsetLeft-35)+"px"
-dog.style.bottom=player.style.bottom
+/* dog follow */
+dog.style.left=(player.offsetLeft-30)+"px"
+dog.style.bottom=bottom+"px"
 
 if(!onGround){
 dog.style.transform="translateY(-10px)"
 }else{
 dog.style.transform="translateY(0)"
 }
+
+/* smooth camera */
+world.style.left += (worldX - parseFloat(world.style.left||0)) * 0.2 + "px"
 
 requestAnimationFrame(loop)
 
