@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Mattekompis – kullar korrekt</title>
+<title>Mattekompis – solida kullar</title>
 
 <style>
 
@@ -16,14 +16,6 @@ box-sizing:border-box;
 -webkit-tap-highlight-color:transparent;
 }
 
-button{
--webkit-appearance:none;
-appearance:none;
-outline:none;
-border:none;
-}
-
-/* BODY */
 body{
 overflow:hidden;
 background:linear-gradient(#7ecbff,#c8f6ff);
@@ -53,13 +45,13 @@ width:100%;
 background:#2ecc71;
 }
 
-/* KULLAR (visuella) */
+/* 🔥 KULLE SOM HINDER */
 .hill{
 position:absolute;
 bottom:80px;
-height:80px;
-background:linear-gradient(#2ecc71,#27ae60);
-border-radius:50% 50% 0 0;
+height:120px;
+background:linear-gradient(180deg,#6be585,#2ecc71,#1e9e5a);
+border-radius:80px 80px 0 0;
 }
 
 /* SPELARE */
@@ -112,6 +104,7 @@ padding:12px 18px;
 border-radius:10px;
 background:#2f4b7c;
 color:white;
+border:none;
 }
 
 </style>
@@ -126,8 +119,8 @@ color:white;
 <div id="ground"></div>
 
 <!-- kullar -->
-<div class="hill" style="left:300px;width:300px;"></div>
-<div class="hill" style="left:900px;width:300px;"></div>
+<div class="hill" style="left:400px;width:200px;"></div>
+<div class="hill" style="left:900px;width:200px;"></div>
 
 </div>
 
@@ -160,6 +153,12 @@ const player = document.getElementById("player")
 const dog = document.getElementById("dog")
 const world = document.getElementById("world")
 
+/* KULLDATA */
+let hills = [
+{ x:400, w:200, h:120 },
+{ x:900, w:200, h:120 }
+]
+
 /* INPUT */
 function stopMove(){ move = 0 }
 
@@ -180,49 +179,51 @@ onGround = false
 }
 }
 
-/* MARKHÖJD */
-function getGround(px){
-
-let hills = [
-{ x:300, w:300 },
-{ x:900, w:300 }
-]
-
-for(let h of hills){
-
-if(px >= h.x && px <= h.x + h.w){
-
-let t = (px - h.x) / h.w
-return 80 + 60 * Math.sin(t * Math.PI)
-
-}
-
-}
-
-return 80
-}
-
 /* LOOP */
 function loop(){
 
-/* rörelse */
 vx = move * 5
 worldX -= vx
 world.style.left = worldX + "px"
 
-/* gravity */
 vy -= 0.7
 
-/* 🔥 BONUS: exakt fotpunkt */
 let px = -worldX + player.offsetLeft + player.offsetWidth * 0.4
-
-let ground = getGround(px)
-
 let bottom = parseFloat(player.style.bottom || 80)
 
-/* landning */
-if(bottom <= ground){
-bottom = ground
+/* ===== KOLLISION MED KULLAR ===== */
+
+let onHillTop = false
+
+for(let h of hills){
+
+// stoppa framför kullen
+if(px > h.x - 10 && px < h.x + 10 && bottom <= 80){
+vx = 0
+}
+
+// ovanpå kullen
+if(px >= h.x && px <= h.x + h.w){
+
+let hillTop = 80 + h.h
+
+if(bottom <= hillTop){
+bottom = hillTop
+vy = 0
+onGround = true
+onHillTop = true
+}
+
+}
+
+}
+
+/* ===== MARK ===== */
+
+if(!onHillTop){
+
+if(bottom <= 80){
+bottom = 80
 vy = 0
 onGround = true
 }else{
@@ -230,14 +231,17 @@ bottom += vy
 onGround = false
 }
 
-/* apply */
+}
+
+/* APPLY */
 player.style.bottom = bottom + "px"
 
-/* hund följer */
+/* HUND */
 dog.style.left = (player.offsetLeft - 60) + "px"
 dog.style.bottom = bottom + "px"
 
 requestAnimationFrame(loop)
+
 }
 
 loop()
