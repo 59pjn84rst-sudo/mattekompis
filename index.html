@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Mattekompis – kullar</title>
+<title>Mattekompis – kullar korrekt</title>
 
 <style>
 
@@ -44,7 +44,7 @@ height:100%;
 width:3000px;
 }
 
-/* MARK (bas) */
+/* MARK */
 #ground{
 position:absolute;
 bottom:0;
@@ -53,7 +53,7 @@ width:100%;
 background:#2ecc71;
 }
 
-/* VISUELL KULLE */
+/* KULLAR (visuella) */
 .hill{
 position:absolute;
 bottom:80px;
@@ -122,6 +122,7 @@ color:white;
 <div id="game">
 
 <div id="world">
+
 <div id="ground"></div>
 
 <!-- kullar -->
@@ -179,10 +180,9 @@ onGround = false
 }
 }
 
-/* 🧠 MARKHÖJD */
+/* MARKHÖJD */
 function getGround(px){
 
-// kullar
 let hills = [
 { x:300, w:300 },
 { x:900, w:300 }
@@ -199,7 +199,6 @@ return 80 + 60 * Math.sin(t * Math.PI)
 
 }
 
-// platt mark
 return 80
 }
 
@@ -214,7 +213,9 @@ world.style.left = worldX + "px"
 /* gravity */
 vy -= 0.7
 
-let px = -worldX + window.innerWidth * 0.4
+/* 🔥 BONUS: exakt fotpunkt */
+let px = -worldX + player.offsetLeft + player.offsetWidth * 0.4
+
 let ground = getGround(px)
 
 let bottom = parseFloat(player.style.bottom || 80)
@@ -232,7 +233,7 @@ onGround = false
 /* apply */
 player.style.bottom = bottom + "px"
 
-/* hund */
+/* hund följer */
 dog.style.left = (player.offsetLeft - 60) + "px"
 dog.style.bottom = bottom + "px"
 
