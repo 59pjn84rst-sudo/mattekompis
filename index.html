@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Mattekompis – riktiga kullar</title>
+<title>Mattekompis</title>
 
 <style>
 
@@ -23,16 +23,16 @@ width:100%;
 background:#2ecc71;
 }
 
-/* 🔥 KULLE */
 .hill{
 position:absolute;
 bottom:80px;
 height:120px;
+width:200px;
+left:400px;
 background:linear-gradient(180deg,#6be585,#2ecc71,#1e9e5a);
 border-radius:80px 80px 0 0;
 }
 
-/* SPELARE */
 #player{
 position:absolute;
 left:40%;
@@ -51,7 +51,6 @@ background-size:contain;
 transform:translateY(20px);
 }
 
-/* HUND */
 #dog{
 position:absolute;
 width:60px;
@@ -67,7 +66,6 @@ object-fit:contain;
 transform:translateY(10px);
 }
 
-/* KONTROLLER */
 #controls{
 display:flex;
 justify-content:center;
@@ -93,11 +91,8 @@ border:none;
 <div id="game">
 
 <div id="world">
-
 <div id="ground"></div>
-
-<div class="hill" style="left:400px;width:200px;"></div>
-
+<div class="hill"></div>
 </div>
 
 <div id="player"><div id="playerSprite"></div></div>
@@ -114,15 +109,15 @@ border:none;
 <script>
 
 /* STATE */
-let vx=0, vy=0, move=0, onGround=true, worldX=0
+let vx=0, vy=0, move=0
+let onGround=true
+let worldX=0
 
 const player=document.getElementById("player")
 const dog=document.getElementById("dog")
 const world=document.getElementById("world")
 
-let hills=[
-{ x:400, w:200, h:120 }
-]
+const hill = { x:400, w:200, h:120 }
 
 /* INPUT */
 function stopMove(){ move=0 }
@@ -136,7 +131,7 @@ left.onpointerup=stopMove
 window.addEventListener("pointerup",stopMove)
 window.addEventListener("touchend",stopMove)
 
-/* HOPP */
+/* 🔥 HOPP (nu funkar alltid) */
 jump.onpointerdown=()=>{
 if(onGround){
 vy=14
@@ -147,43 +142,35 @@ onGround=false
 /* LOOP */
 function loop(){
 
-/* position */
 let px = -worldX + player.offsetLeft + player.offsetWidth*0.4
 let bottom = parseFloat(player.style.bottom || 80)
-
-/* ===== KOLLISION ===== */
 
 let blocked=false
 let onTop=false
 
-for(let h of hills){
-
-// 🔴 STOPP VID KANT
+/* ===== STOPP VID KANT ===== */
 if(
-px > h.x - 10 &&
-px < h.x + 5 &&
+px > hill.x - 5 &&
+px < hill.x + 5 &&
 bottom <= 80
 ){
 blocked=true
 }
 
-// 🟢 STÅ PÅ TOPP (endast om man landar uppifrån!)
+/* ===== STÅ PÅ TOPP ===== */
 if(
-px >= h.x &&
-px <= h.x + h.w &&
-vy <= 0 &&               // faller ner
-bottom >= 80 + h.h - 20  // nära toppen
+px >= hill.x &&
+px <= hill.x + hill.w &&
+vy <= 0 &&
+bottom >= 80 + hill.h - 20
 ){
-bottom = 80 + h.h
+bottom = 80 + hill.h
 vy = 0
 onGround = true
 onTop = true
 }
 
-}
-
 /* ===== RÖRELSE ===== */
-
 if(!blocked){
 vx = move * 5
 }else{
@@ -194,11 +181,9 @@ worldX -= vx
 world.style.left = worldX + "px"
 
 /* ===== GRAVITY ===== */
-
 vy -= 0.7
 
 /* ===== MARK ===== */
-
 if(!onTop){
 
 if(bottom <= 80){
