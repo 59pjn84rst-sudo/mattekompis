@@ -7,13 +7,31 @@
 <title>Mattekompis</title>
 
 <style>
+*{
+margin:0;
+box-sizing:border-box;
+-webkit-user-select:none;
+-webkit-tap-highlight-color:transparent;
+}
 
-*{margin:0;box-sizing:border-box;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;}
+body{
+overflow:hidden;
+background:linear-gradient(#7ecbff,#c8f6ff);
+}
 
-body{overflow:hidden;background:linear-gradient(#7ecbff,#c8f6ff);}
+#game{
+position:relative;
+height:65vh;
+overflow:hidden;
+}
 
-#game{position:relative;height:65vh;overflow:hidden;}
-#world{position:absolute;bottom:0;left:0;height:100%;width:3000px;}
+#world{
+position:absolute;
+bottom:0;
+left:0;
+height:100%;
+width:3000px;
+}
 
 #ground{
 position:absolute;
@@ -82,7 +100,6 @@ background:#2f4b7c;
 color:white;
 border:none;
 }
-
 </style>
 </head>
 
@@ -108,119 +125,114 @@ border:none;
 
 <script>
 
-/* STATE */
-let vx=0, vy=0, move=0
-let onGround=true
-let worldX=0
+/* ===== STATE ===== */
+let vx = 0
+let vy = 0
+let move = 0
+let onGround = true
+let worldX = 0
 
-const player=document.getElementById("player")
-const dog=document.getElementById("dog")
-const world=document.getElementById("world")
+const player = document.getElementById("player")
+const dog = document.getElementById("dog")
+const world = document.getElementById("world")
 
 const hill = { x:400, w:200, h:120 }
 
-/* INPUT */
-function stopMove(){ move=0 }
+/* ===== INPUT (ROBUST) ===== */
 
-right.onpointerdown=()=>move=1
-left.onpointerdown=()=>move=-1
+function stop(){ move = 0 }
 
-right.onpointerup=stopMove
-left.onpointerup=stopMove
+function pressRight(){ move = 1 }
+function pressLeft(){ move = -1 }
 
-window.addEventListener("pointerup",stopMove)
-window.addEventListener("touchend",stopMove)
+/* touch + mouse (stabilt) */
+right.addEventListener("touchstart", pressRight)
+left.addEventListener("touchstart", pressLeft)
 
-/* 🔥 ULTRA-SÄKERT HOPP */
-function doJump(){
+right.addEventListener("mousedown", pressRight)
+left.addEventListener("mousedown", pressLeft)
 
-// liten tolerans (om onGround buggar)
-let bottom = parseFloat(player.style.bottom || 80)
+right.addEventListener("touchend", stop)
+left.addEventListener("touchend", stop)
 
-if(onGround || bottom <= 82){
+right.addEventListener("mouseup", stop)
+left.addEventListener("mouseup", stop)
+
+window.addEventListener("touchend", stop)
+window.addEventListener("mouseup", stop)
+
+/* 🔥 HOPP – HELT ISOLERAT */
+function jumpNow(){
 vy = 14
 onGround = false
 }
 
-}
+jump.addEventListener("touchstart", jumpNow)
+jump.addEventListener("mousedown", jumpNow)
 
-/* 🔥 ALLA EVENT */
-jump.addEventListener("pointerdown", doJump)
-jump.addEventListener("touchstart", doJump)
-jump.addEventListener("mousedown", doJump)
-jump.addEventListener("click", doJump)
+/* ===== LOOP ===== */
 
-/* LOOP */
 function loop(){
 
-let px = -worldX + player.offsetLeft + player.offsetWidth*0.4
+let px = -worldX + player.offsetLeft + player.offsetWidth * 0.4
 let bottom = parseFloat(player.style.bottom || 80)
 
-let blocked=false
-let onTop=false
+/* ===== RÖRELSE (INGET KAN BLOCKERA KNAPPARNA) ===== */
 
-/* STOPP VID KANT */
+vx = move * 5
+
+/* ===== KOLLISION MED KULLEN ===== */
+
+/* 1. STOPP MOT VÄGG */
 if(
-px > hill.x - 5 &&
-px < hill.x + 5 &&
-bottom <= 82
+px > hill.x - 10 &&
+px < hill.x &&
+bottom <= 82 &&
+vx > 0
 ){
-blocked=true
+vx = 0
 }
 
-/* LANDNING PÅ KULLEN */
+/* 2. LANDNING PÅ TOPP (endast uppifrån) */
 if(
-px >= hill.x &&
-px <= hill.x + hill.w &&
-vy <= 0 &&
-bottom >= 80 + hill.h - 20
+px > hill.x &&
+px < hill.x + hill.w &&
+vy < 0 &&
+bottom > 80 + hill.h - 10
 ){
 bottom = 80 + hill.h
 vy = 0
 onGround = true
-onTop = true
 }
 
-/* RÖRELSE */
-if(!blocked){
-vx = move * 5
-}else{
-vx = 0
-}
-
+/* ===== WORLD MOVE ===== */
 worldX -= vx
 world.style.left = worldX + "px"
 
-/* GRAVITY */
+/* ===== GRAVITY ===== */
 vy -= 0.7
+bottom += vy
 
-/* MARK */
-if(!onTop){
-
+/* ===== MARK ===== */
 if(bottom <= 80){
 bottom = 80
 vy = 0
 onGround = true
-}else{
-bottom += vy
-onGround = false
 }
 
-}
-
-/* APPLY */
+/* ===== APPLY ===== */
 player.style.bottom = bottom + "px"
 
-/* HUND */
+/* ===== HUND ===== */
 dog.style.left = (player.offsetLeft - 60) + "px"
 dog.style.bottom = bottom + "px"
 
 requestAnimationFrame(loop)
-
 }
 
 loop()
 
 </script>
+
 </body>
 </html>
