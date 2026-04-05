@@ -8,7 +8,7 @@
 
 <style>
 
-/* TA BORT ALL MARKERING */
+/* RESET */
 *{
 margin:0;
 box-sizing:border-box;
@@ -16,13 +16,20 @@ box-sizing:border-box;
 -webkit-tap-highlight-color:transparent;
 }
 
+button{
+-webkit-appearance:none;
+appearance:none;
+outline:none;
+border:none;
+}
+
+/* BODY */
 body{
 overflow:hidden;
 background:linear-gradient(#7ecbff,#c8f6ff);
 }
 
 /* SPEL */
-
 #game{
 position:relative;
 height:65vh;
@@ -30,7 +37,6 @@ overflow:hidden;
 }
 
 /* MARK */
-
 #ground{
 position:absolute;
 bottom:0;
@@ -40,47 +46,39 @@ background:#2ecc71;
 }
 
 /* SPELARE */
-
 #player{
 position:absolute;
 left:40%;
 bottom:80px;
 width:160px;
 height:160px;
+display:flex;
+align-items:flex-end; /* 🔥 gör att fötterna ligger mot mark */
 }
 
+/* 🔥 viktig fix */
 #playerSprite{
 width:100%;
-height:100%;
-background:url("player-idle.PNG") center/contain no-repeat;
-}
-
-.walk{
-background:url("player-walk.PNG") left center;
-background-size:auto 160px;
-animation:walk .6s steps(6) infinite;
-}
-
-@keyframes walk{
-from{background-position:0}
-to{background-position:-960px}
+height:120%;  /* kompenserar för luft i bilden */
+background:url("player-idle.PNG") center bottom / contain no-repeat;
 }
 
 /* HUND */
-
 #dog{
 position:absolute;
 width:60px;
 height:60px;
+display:flex;
+align-items:flex-end;
 }
 
 #dog img{
 width:100%;
-height:100%;
+height:120%;
+object-fit:contain;
 }
 
 /* KONTROLLER */
-
 #controls{
 display:flex;
 justify-content:center;
@@ -92,16 +90,9 @@ padding:10px;
 button{
 font-size:28px;
 padding:12px 18px;
-border:none;
 border-radius:10px;
 background:#2f4b7c;
 color:white;
-outline:none;
--webkit-tap-highlight-color:transparent;
-}
-
-button:focus{
-outline:none;
 }
 
 </style>
@@ -131,8 +122,7 @@ outline:none;
 
 <script>
 
-/* ===== STATE ===== */
-
+/* STATE */
 let vx = 0
 let vy = 0
 let move = 0
@@ -140,11 +130,8 @@ let onGround = true
 
 const player = document.getElementById("player")
 const dog = document.getElementById("dog")
-const dogImg = document.getElementById("dogImg")
-const sprite = document.getElementById("playerSprite")
 
-/* ===== INPUT ===== */
-
+/* INPUT */
 function stopMove(){
 move = 0
 }
@@ -155,7 +142,6 @@ left.addEventListener("pointerdown", ()=>move = -1)
 right.addEventListener("pointerup", stopMove)
 left.addEventListener("pointerup", stopMove)
 
-/* VIKTIGT FÖR MOBIL */
 window.addEventListener("pointerup", stopMove)
 window.addEventListener("touchend", stopMove)
 window.addEventListener("blur", stopMove)
@@ -168,47 +154,31 @@ onGround = false
 }
 })
 
-/* ===== LOOP ===== */
-
+/* LOOP */
 function loop(){
 
-/* RÖRELSE */
+/* rörelse */
 vx = move * 5
 
-/* ANIMATION */
-if(move !== 0){
-sprite.classList.add("walk")
-dogImg.src="dog-walk.png"
-}else{
-sprite.classList.remove("walk")
-dogImg.src="dog-sit.png"
-}
-
-/* GRAVITY */
+/* gravity */
 vy -= 0.7
 
 let bottom = parseFloat(player.style.bottom || 80)
 bottom += vy
 
-/* MARK */
+/* mark */
 if(bottom <= 80){
 bottom = 80
 vy = 0
 onGround = true
 }
 
-/* APPLY */
+/* apply */
 player.style.bottom = bottom + "px"
 
-/* HUND */
+/* hund */
 dog.style.left = (player.offsetLeft - 60) + "px"
 dog.style.bottom = bottom + "px"
-
-if(!onGround){
-dog.style.transform = "translateY(-15px)"
-}else{
-dog.style.transform = "translateY(0)"
-}
 
 requestAnimationFrame(loop)
 }
