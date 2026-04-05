@@ -131,13 +131,18 @@ left.onpointerup=stopMove
 window.addEventListener("pointerup",stopMove)
 window.addEventListener("touchend",stopMove)
 
-/* 🔥 HOPP (nu funkar alltid) */
-jump.onpointerdown=()=>{
+/* 🔥 HOPP-FUNKTION */
+function doJump(){
 if(onGround){
-vy=14
-onGround=false
+vy = 14
+onGround = false
 }
 }
+
+/* 🔥 flera sätt att trigga hopp */
+jump.addEventListener("pointerdown", doJump)
+jump.addEventListener("touchstart", doJump)
+jump.addEventListener("click", doJump)
 
 /* LOOP */
 function loop(){
@@ -148,7 +153,7 @@ let bottom = parseFloat(player.style.bottom || 80)
 let blocked=false
 let onTop=false
 
-/* ===== STOPP VID KANT ===== */
+/* STOPP VID KANT */
 if(
 px > hill.x - 5 &&
 px < hill.x + 5 &&
@@ -157,7 +162,7 @@ bottom <= 80
 blocked=true
 }
 
-/* ===== STÅ PÅ TOPP ===== */
+/* LANDNING PÅ KULLEN */
 if(
 px >= hill.x &&
 px <= hill.x + hill.w &&
@@ -170,7 +175,7 @@ onGround = true
 onTop = true
 }
 
-/* ===== RÖRELSE ===== */
+/* RÖRELSE */
 if(!blocked){
 vx = move * 5
 }else{
@@ -180,10 +185,10 @@ vx = 0
 worldX -= vx
 world.style.left = worldX + "px"
 
-/* ===== GRAVITY ===== */
+/* GRAVITY */
 vy -= 0.7
 
-/* ===== MARK ===== */
+/* MARK */
 if(!onTop){
 
 if(bottom <= 80){
