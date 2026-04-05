@@ -14,13 +14,7 @@ body{overflow:hidden;background:linear-gradient(#7ecbff,#c8f6ff);}
 #game{position:relative;height:65vh;overflow:hidden;}
 #world{position:absolute;bottom:0;left:0;height:100%;width:5000px;}
 
-#ground{
-position:absolute;
-bottom:0;
-height:80px;
-width:100%;
-background:#2ecc71;
-}
+#ground{position:absolute;bottom:0;height:80px;width:100%;background:#2ecc71;}
 
 .water{position:absolute;bottom:0;height:80px;background:#3498db;}
 .lava{position:absolute;bottom:0;height:80px;background:linear-gradient(#ff3c00,#ff9a00);}
@@ -46,7 +40,7 @@ background:linear-gradient(180deg,#6be585,#2ecc71,#1e9e5a);
 border-radius:80px 80px 0 0;
 }
 
-/* 🟣 BÅT (bild nu!) */
+/* 🟣 BÅT */
 #boat{
 position:absolute;
 width:120px;
@@ -55,7 +49,6 @@ bottom:110px;
 background:url("67.jpg") center/contain no-repeat;
 }
 
-/* SPELARE */
 #player{
 position:absolute;
 left:40%;
@@ -74,7 +67,6 @@ background-size:contain;
 transform:translateY(20px);
 }
 
-/* HUND */
 #dog{
 position:absolute;
 width:60px;
@@ -90,7 +82,6 @@ object-fit:contain;
 transform:translateY(10px);
 }
 
-/* KONTROLLER */
 #controls{
 display:flex;
 justify-content:center;
@@ -157,10 +148,10 @@ const dog=document.getElementById("dog")
 const world=document.getElementById("world")
 const boat=document.getElementById("boat")
 
-const hill = { x:400, w:200, h:120 }
-const islands = [{x:760,w:140},{x:880,w:140}]
-const water = { x:700,w:300 }
-const lava = { x:1100,w:300 }
+const hill={x:400,w:200,h:120}
+const islands=[{x:760,w:140},{x:880,w:140}]
+const water={x:700,w:300}
+const lava={x:1100,w:300}
 
 /* 🟣 båt */
 let boatX=1150
@@ -186,7 +177,7 @@ left.addEventListener("mouseup",stop)
 window.addEventListener("touchend",stop)
 window.addEventListener("mouseup",stop)
 
-/* hopp */
+/* HOPP */
 function jumpNow(){
 vy=14
 onGround=false
@@ -197,69 +188,78 @@ jump.addEventListener("mousedown",jumpNow)
 /* LOOP */
 function loop(){
 
-let px = -worldX + player.offsetLeft + player.offsetWidth*0.4
-let bottom = parseFloat(player.style.bottom || 80)
+let px=-worldX+player.offsetLeft+player.offsetWidth*0.4
+let bottom=parseFloat(player.style.bottom||80)
 
-vx = move * 5
+vx=move*5
 
-/* ===== KULLE ===== */
-if(px>hill.x-10 && px<hill.x && bottom<=82 && vx>0){vx=0}
+/* KULLE */
+if(px>hill.x-10&&px<hill.x&&bottom<=82&&vx>0){vx=0}
 
-if(px>hill.x && px<hill.x+hill.w && vy<0 && bottom>80+hill.h-10){
+if(px>hill.x&&px<hill.x+hill.w&&vy<0&&bottom>80+hill.h-10){
 bottom=80+hill.h
 vy=0
 onGround=true
 }
 
-/* ===== ÖAR ===== */
+/* ÖAR (FIXADE 🔥) */
 let onIsland=false
+
 for(let i of islands){
-if(px>i.x && px<i.x+i.w && vy<0 && bottom>=120){
-bottom=120
+
+let islandTop=120
+
+if(
+px>i.x &&
+px<i.x+i.w &&
+vy<0 &&
+bottom>=islandTop-15
+){
+bottom=islandTop
 vy=0
 onGround=true
 onIsland=true
 }
+
 }
 
-/* ===== BÅT (FIXAD) ===== */
+/* BÅT */
 let onBoat=false
-let boatTop = boatY + 20
+let boatTop=boatY+20
 
 if(
-px > boatX &&
-px < boatX + boatW &&
-vy < 0 &&
-bottom >= boatTop - 5
+px>boatX &&
+px<boatX+boatW &&
+vy<0 &&
+bottom>=boatTop-10
 ){
-bottom = boatTop
-vy = 0
-onGround = true
-onBoat = true
+bottom=boatTop
+vy=0
+onGround=true
+onBoat=true
 
-// 🔥 följ med båten
-worldX -= boatDir*2
+worldX-=boatDir*2
 }
 
-/* ===== VATTEN / LAVA ===== */
-let inWater = (px>water.x && px<water.x+water.w)
-let inLava = (px>lava.x && px<lava.x+lava.w)
+/* VATTEN / LAVA */
+let inWater=(px>water.x&&px<water.x+water.w)
+let inLava=(px>lava.x&&px<lava.x+lava.w)
 
-/* ===== WORLD ===== */
-worldX -= vx
-world.style.left = worldX + "px"
+/* WORLD */
+worldX-=vx
+world.style.left=worldX+"px"
 
-/* ===== BÅT RÖR SIG ===== */
-boatX += boatDir*2
-if(boatX<1100||boatX>1300) boatDir*=-1
-boat.style.left = boatX+"px"
+/* BÅT RÖR SIG */
+boatX+=boatDir*2
+if(boatX<1100||boatX>1300)boatDir*=-1
+boat.style.left=boatX+"px"
 
-/* ===== GRAVITY ===== */
-vy -= 0.7
-bottom += vy
+/* GRAVITY */
+vy-=0.7
+bottom+=vy
 
-/* ===== MARK ===== */
-if(!inWater && !inLava && !onIsland && !onBoat){
+/* MARK */
+if(!inWater&&!inLava&&!onIsland&&!onBoat){
 if(bottom<=80){
 bottom=80
 vy=0
@@ -268,7 +268,7 @@ onGround=true
 }
 
 /* APPLY */
-player.style.bottom = bottom+"px"
+player.style.bottom=bottom+"px"
 
 dog.style.left=(player.offsetLeft-60)+"px"
 dog.style.bottom=bottom+"px"
