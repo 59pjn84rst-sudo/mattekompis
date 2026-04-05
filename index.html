@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Mattekompis</title>
+<title>Mattekompis – kullar</title>
 
 <style>
 
@@ -36,13 +36,30 @@ height:65vh;
 overflow:hidden;
 }
 
-/* MARK */
+#world{
+position:absolute;
+bottom:0;
+left:0;
+height:100%;
+width:3000px;
+}
+
+/* MARK (bas) */
 #ground{
 position:absolute;
 bottom:0;
 height:80px;
 width:100%;
 background:#2ecc71;
+}
+
+/* VISUELL KULLE */
+.hill{
+position:absolute;
+bottom:80px;
+height:80px;
+background:linear-gradient(#2ecc71,#27ae60);
+border-radius:50% 50% 0 0;
 }
 
 /* SPELARE */
@@ -56,14 +73,11 @@ display:flex;
 align-items:flex-end;
 }
 
-/* 🔥 FIXAD SPRITE */
 #playerSprite{
 width:100%;
 height:100%;
 background:url("player-idle.PNG") center bottom no-repeat;
 background-size:contain;
-
-/* 🔥 trycker ner gubben så fötterna träffar mark */
 transform: translateY(20px);
 }
 
@@ -107,14 +121,21 @@ color:white;
 
 <div id="game">
 
+<div id="world">
 <div id="ground"></div>
+
+<!-- kullar -->
+<div class="hill" style="left:300px;width:300px;"></div>
+<div class="hill" style="left:900px;width:300px;"></div>
+
+</div>
 
 <div id="player">
 <div id="playerSprite"></div>
 </div>
 
 <div id="dog">
-<img id="dogImg" src="dog-sit.png">
+<img src="dog-sit.png">
 </div>
 
 </div>
@@ -132,50 +153,80 @@ let vx = 0
 let vy = 0
 let move = 0
 let onGround = true
+let worldX = 0
 
 const player = document.getElementById("player")
 const dog = document.getElementById("dog")
+const world = document.getElementById("world")
 
 /* INPUT */
-function stopMove(){
-move = 0
-}
+function stopMove(){ move = 0 }
 
-right.addEventListener("pointerdown", ()=>move = 1)
-left.addEventListener("pointerdown", ()=>move = -1)
+right.onpointerdown = ()=>move = 1
+left.onpointerdown  = ()=>move = -1
 
-right.addEventListener("pointerup", stopMove)
-left.addEventListener("pointerup", stopMove)
+right.onpointerup = stopMove
+left.onpointerup  = stopMove
 
 window.addEventListener("pointerup", stopMove)
 window.addEventListener("touchend", stopMove)
-window.addEventListener("blur", stopMove)
 
 /* HOPP */
-jump.addEventListener("pointerdown", ()=>{
+jump.onpointerdown = ()=>{
 if(onGround){
 vy = 14
 onGround = false
 }
-})
+}
+
+/* 🧠 MARKHÖJD */
+function getGround(px){
+
+// kullar
+let hills = [
+{ x:300, w:300 },
+{ x:900, w:300 }
+]
+
+for(let h of hills){
+
+if(px >= h.x && px <= h.x + h.w){
+
+let t = (px - h.x) / h.w
+return 80 + 60 * Math.sin(t * Math.PI)
+
+}
+
+}
+
+// platt mark
+return 80
+}
 
 /* LOOP */
 function loop(){
 
 /* rörelse */
 vx = move * 5
+worldX -= vx
+world.style.left = worldX + "px"
 
 /* gravity */
 vy -= 0.7
 
-let bottom = parseFloat(player.style.bottom || 80)
-bottom += vy
+let px = -worldX + window.innerWidth * 0.4
+let ground = getGround(px)
 
-/* mark */
-if(bottom <= 80){
-bottom = 80
+let bottom = parseFloat(player.style.bottom || 80)
+
+/* landning */
+if(bottom <= ground){
+bottom = ground
 vy = 0
 onGround = true
+}else{
+bottom += vy
+onGround = false
 }
 
 /* apply */
