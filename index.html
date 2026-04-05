@@ -4,39 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Mattekompis – solida kullar</title>
+<title>Mattekompis – riktiga kullar</title>
 
 <style>
 
-/* RESET */
-*{
-margin:0;
-box-sizing:border-box;
--webkit-user-select:none;
--webkit-tap-highlight-color:transparent;
-}
+*{margin:0;box-sizing:border-box;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;}
 
-body{
-overflow:hidden;
-background:linear-gradient(#7ecbff,#c8f6ff);
-}
+body{overflow:hidden;background:linear-gradient(#7ecbff,#c8f6ff);}
 
-/* SPEL */
-#game{
-position:relative;
-height:65vh;
-overflow:hidden;
-}
+#game{position:relative;height:65vh;overflow:hidden;}
+#world{position:absolute;bottom:0;left:0;height:100%;width:3000px;}
 
-#world{
-position:absolute;
-bottom:0;
-left:0;
-height:100%;
-width:3000px;
-}
-
-/* MARK */
 #ground{
 position:absolute;
 bottom:0;
@@ -45,7 +23,7 @@ width:100%;
 background:#2ecc71;
 }
 
-/* 🔥 KULLE SOM HINDER */
+/* 🔥 KULLE */
 .hill{
 position:absolute;
 bottom:80px;
@@ -70,7 +48,7 @@ width:100%;
 height:100%;
 background:url("player-idle.PNG") center bottom no-repeat;
 background-size:contain;
-transform: translateY(20px);
+transform:translateY(20px);
 }
 
 /* HUND */
@@ -86,7 +64,7 @@ align-items:flex-end;
 width:100%;
 height:100%;
 object-fit:contain;
-transform: translateY(10px);
+transform:translateY(10px);
 }
 
 /* KONTROLLER */
@@ -118,19 +96,12 @@ border:none;
 
 <div id="ground"></div>
 
-<!-- kullar -->
 <div class="hill" style="left:400px;width:200px;"></div>
-<div class="hill" style="left:900px;width:200px;"></div>
 
 </div>
 
-<div id="player">
-<div id="playerSprite"></div>
-</div>
-
-<div id="dog">
-<img src="dog-sit.png">
-</div>
+<div id="player"><div id="playerSprite"></div></div>
+<div id="dog"><img src="dog-sit.png"></div>
 
 </div>
 
@@ -143,84 +114,92 @@ border:none;
 <script>
 
 /* STATE */
-let vx = 0
-let vy = 0
-let move = 0
-let onGround = true
-let worldX = 0
+let vx=0, vy=0, move=0, onGround=true, worldX=0
 
-const player = document.getElementById("player")
-const dog = document.getElementById("dog")
-const world = document.getElementById("world")
+const player=document.getElementById("player")
+const dog=document.getElementById("dog")
+const world=document.getElementById("world")
 
-/* KULLDATA */
-let hills = [
-{ x:400, w:200, h:120 },
-{ x:900, w:200, h:120 }
+let hills=[
+{ x:400, w:200, h:120 }
 ]
 
 /* INPUT */
-function stopMove(){ move = 0 }
+function stopMove(){ move=0 }
 
-right.onpointerdown = ()=>move = 1
-left.onpointerdown  = ()=>move = -1
+right.onpointerdown=()=>move=1
+left.onpointerdown=()=>move=-1
 
-right.onpointerup = stopMove
-left.onpointerup  = stopMove
+right.onpointerup=stopMove
+left.onpointerup=stopMove
 
-window.addEventListener("pointerup", stopMove)
-window.addEventListener("touchend", stopMove)
+window.addEventListener("pointerup",stopMove)
+window.addEventListener("touchend",stopMove)
 
 /* HOPP */
-jump.onpointerdown = ()=>{
+jump.onpointerdown=()=>{
 if(onGround){
-vy = 14
-onGround = false
+vy=14
+onGround=false
 }
 }
 
 /* LOOP */
 function loop(){
 
-vx = move * 5
-worldX -= vx
-world.style.left = worldX + "px"
-
-vy -= 0.7
-
-let px = -worldX + player.offsetLeft + player.offsetWidth * 0.4
+/* position */
+let px = -worldX + player.offsetLeft + player.offsetWidth*0.4
 let bottom = parseFloat(player.style.bottom || 80)
 
-/* ===== KOLLISION MED KULLAR ===== */
+/* ===== KOLLISION ===== */
 
-let onHillTop = false
+let blocked=false
+let onTop=false
 
 for(let h of hills){
 
-// stoppa framför kullen
-if(px > h.x - 10 && px < h.x + 10 && bottom <= 80){
+// 🔴 STOPP VID KANT
+if(
+px > h.x - 10 &&
+px < h.x + 5 &&
+bottom <= 80
+){
+blocked=true
+}
+
+// 🟢 STÅ PÅ TOPP (endast om man landar uppifrån!)
+if(
+px >= h.x &&
+px <= h.x + h.w &&
+vy <= 0 &&               // faller ner
+bottom >= 80 + h.h - 20  // nära toppen
+){
+bottom = 80 + h.h
+vy = 0
+onGround = true
+onTop = true
+}
+
+}
+
+/* ===== RÖRELSE ===== */
+
+if(!blocked){
+vx = move * 5
+}else{
 vx = 0
 }
 
-// ovanpå kullen
-if(px >= h.x && px <= h.x + h.w){
+worldX -= vx
+world.style.left = worldX + "px"
 
-let hillTop = 80 + h.h
+/* ===== GRAVITY ===== */
 
-if(bottom <= hillTop){
-bottom = hillTop
-vy = 0
-onGround = true
-onHillTop = true
-}
-
-}
-
-}
+vy -= 0.7
 
 /* ===== MARK ===== */
 
-if(!onHillTop){
+if(!onTop){
 
 if(bottom <= 80){
 bottom = 80
@@ -247,6 +226,5 @@ requestAnimationFrame(loop)
 loop()
 
 </script>
-
 </body>
 </html>
