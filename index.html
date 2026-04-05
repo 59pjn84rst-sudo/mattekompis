@@ -12,7 +12,7 @@
 body{overflow:hidden;background:linear-gradient(#7ecbff,#c8f6ff);}
 
 #game{position:relative;height:65vh;overflow:hidden;}
-#world{position:absolute;bottom:0;left:0;height:100%;width:4000px;}
+#world{position:absolute;bottom:0;left:0;height:100%;width:5000px;}
 
 #ground{
 position:absolute;
@@ -22,7 +22,7 @@ width:100%;
 background:#2ecc71;
 }
 
-/* 🌊 VATTEN */
+/* 🌊 vatten */
 .water{
 position:absolute;
 bottom:0;
@@ -30,7 +30,15 @@ height:80px;
 background:#3498db;
 }
 
-/* 🏝️ Ö */
+/* 🔥 lava */
+.lava{
+position:absolute;
+bottom:0;
+height:80px;
+background:linear-gradient(90deg,#ff3c00,#ff9a00);
+}
+
+/* 🏝️ ö */
 .island{
 position:absolute;
 bottom:80px;
@@ -40,13 +48,13 @@ background:#ffe066;
 border-radius:20px;
 }
 
-/* 🌴 PALM */
+/* 🌴 palm */
 .palm{
 position:absolute;
 font-size:120px;
 }
 
-/* 🌄 KULLE */
+/* 🌄 kulle */
 .hill{
 position:absolute;
 bottom:80px;
@@ -57,7 +65,15 @@ background:linear-gradient(180deg,#6be585,#2ecc71,#1e9e5a);
 border-radius:80px 80px 0 0;
 }
 
-/* SPELARE */
+/* 🟣 67 båt */
+.boat67{
+position:absolute;
+bottom:120px;
+font-size:60px;
+z-index:3;
+}
+
+/* spelare */
 #player{
 position:absolute;
 left:40%;
@@ -76,7 +92,7 @@ background-size:contain;
 transform:translateY(20px);
 }
 
-/* HUND */
+/* hund */
 #dog{
 position:absolute;
 width:60px;
@@ -92,7 +108,7 @@ object-fit:contain;
 transform:translateY(10px);
 }
 
-/* KONTROLLER */
+/* kontroller */
 #controls{
 display:flex;
 justify-content:center;
@@ -123,15 +139,21 @@ border:none;
 <!-- kulle -->
 <div class="hill"></div>
 
-<!-- 🌊 vatten -->
+<!-- vatten -->
 <div class="water" style="left:700px;width:300px;"></div>
 
-<!-- 🏝️ öar -->
+<!-- öar -->
 <div class="island" style="left:760px;"></div>
 <div class="island" style="left:880px;"></div>
 
 <div class="palm" style="left:750px;bottom:80px;">🌴</div>
 <div class="palm" style="left:870px;bottom:80px;">🌴</div>
+
+<!-- 🔥 lava -->
+<div class="lava" style="left:1100px;width:300px;"></div>
+
+<!-- 🟣 67 -->
+<div id="boat" class="boat67">67</div>
 
 </div>
 
@@ -148,7 +170,7 @@ border:none;
 
 <script>
 
-/* ===== STATE ===== */
+/* STATE */
 let vx=0, vy=0, move=0
 let onGround=true
 let worldX=0
@@ -156,43 +178,39 @@ let worldX=0
 const player=document.getElementById("player")
 const dog=document.getElementById("dog")
 const world=document.getElementById("world")
+const boat=document.getElementById("boat")
 
 const hill = { x:400, w:200, h:120 }
+const islands = [{x:760,w:140},{x:880,w:140}]
+const water = { x:700,w:300 }
+const lava = { x:1100,w:300 }
 
-/* 🏝️ öar */
-const islands = [
-{ x:760, w:140 },
-{ x:880, w:140 }
-]
-
-/* 🌊 vatten */
-const water = { x:700, w:300 }
+/* 🟣 båt */
+let boatX = 1150
+let boatDir = 1
 
 /* INPUT */
 function stop(){ move=0 }
-
 function pressRight(){ move=1 }
 function pressLeft(){ move=-1 }
 
 right.addEventListener("touchstart", pressRight)
 left.addEventListener("touchstart", pressLeft)
-
 right.addEventListener("mousedown", pressRight)
 left.addEventListener("mousedown", pressLeft)
 
 right.addEventListener("touchend", stop)
 left.addEventListener("touchend", stop)
-
 right.addEventListener("mouseup", stop)
 left.addEventListener("mouseup", stop)
 
 window.addEventListener("touchend", stop)
 window.addEventListener("mouseup", stop)
 
-/* HOPP */
+/* hopp */
 function jumpNow(){
-vy = 14
-onGround = false
+vy=14
+onGround=false
 }
 
 jump.addEventListener("touchstart", jumpNow)
@@ -204,67 +222,61 @@ function loop(){
 let px = -worldX + player.offsetLeft + player.offsetWidth*0.4
 let bottom = parseFloat(player.style.bottom || 80)
 
-/* ===== RÖRELSE ===== */
 vx = move * 5
 
 /* ===== KULLE ===== */
-if(
-px > hill.x - 10 &&
-px < hill.x &&
-bottom <= 82 &&
-vx > 0
-){
-vx = 0
-}
+if(px > hill.x-10 && px < hill.x && bottom<=82 && vx>0){ vx=0 }
 
-if(
-px > hill.x &&
-px < hill.x + hill.w &&
-vy < 0 &&
-bottom > 80 + hill.h - 10
-){
-bottom = 80 + hill.h
-vy = 0
-onGround = true
+if(px>hill.x && px<hill.x+hill.w && vy<0 && bottom>80+hill.h-10){
+bottom=80+hill.h
+vy=0
+onGround=true
 }
-
-/* ===== VATTEN ===== */
-let inWater = (px > water.x && px < water.x + water.w)
 
 /* ===== ÖAR ===== */
-let onIsland = false
-
+let onIsland=false
 for(let i of islands){
-
-if(
-px > i.x &&
-px < i.x + i.w &&
-vy < 0 &&
-bottom > 120 - 10
-){
-bottom = 120
-vy = 0
-onGround = true
-onIsland = true
+if(px>i.x && px<i.x+i.w && vy<0 && bottom>120-10){
+bottom=120
+vy=0
+onGround=true
+onIsland=true
+}
 }
 
+/* ===== BÅT (67) ===== */
+let onBoat=false
+if(px>boatX && px<boatX+80 && vy<0 && bottom>120-10){
+bottom=120
+vy=0
+onGround=true
+onBoat=true
 }
+
+/* ===== VATTEN / LAVA ===== */
+let inWater = (px>water.x && px<water.x+water.w)
+let inLava = (px>lava.x && px<lava.x+lava.w)
 
 /* ===== WORLD ===== */
 worldX -= vx
 world.style.left = worldX + "px"
+
+/* ===== BÅT RÖRELSE ===== */
+boatX += boatDir*2
+if(boatX < 1100 || boatX > 1300) boatDir *= -1
+boat.style.left = boatX + "px"
 
 /* ===== GRAVITY ===== */
 vy -= 0.7
 bottom += vy
 
 /* ===== MARK ===== */
-if(!inWater && !onIsland){
+if(!inWater && !inLava && !onIsland && !onBoat){
 
-if(bottom <= 80){
-bottom = 80
-vy = 0
-onGround = true
+if(bottom<=80){
+bottom=80
+vy=0
+onGround=true
 }
 
 }
@@ -272,8 +284,7 @@ onGround = true
 /* ===== APPLY ===== */
 player.style.bottom = bottom + "px"
 
-/* ===== HUND ===== */
-dog.style.left = (player.offsetLeft - 60) + "px"
+dog.style.left = (player.offsetLeft-60)+"px"
 dog.style.bottom = bottom + "px"
 
 requestAnimationFrame(loop)
