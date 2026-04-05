@@ -131,17 +131,23 @@ left.onpointerup=stopMove
 window.addEventListener("pointerup",stopMove)
 window.addEventListener("touchend",stopMove)
 
-/* 🔥 HOPP-FUNKTION */
+/* 🔥 ULTRA-SÄKERT HOPP */
 function doJump(){
-if(onGround){
+
+// liten tolerans (om onGround buggar)
+let bottom = parseFloat(player.style.bottom || 80)
+
+if(onGround || bottom <= 82){
 vy = 14
 onGround = false
 }
+
 }
 
-/* 🔥 flera sätt att trigga hopp */
+/* 🔥 ALLA EVENT */
 jump.addEventListener("pointerdown", doJump)
 jump.addEventListener("touchstart", doJump)
+jump.addEventListener("mousedown", doJump)
 jump.addEventListener("click", doJump)
 
 /* LOOP */
@@ -157,7 +163,7 @@ let onTop=false
 if(
 px > hill.x - 5 &&
 px < hill.x + 5 &&
-bottom <= 80
+bottom <= 82
 ){
 blocked=true
 }
@@ -217,4 +223,4 @@ loop()
 
 </script>
 </body>
-</html> 
+</html>
