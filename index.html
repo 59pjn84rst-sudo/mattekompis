@@ -12,7 +12,7 @@
 body{overflow:hidden;background:linear-gradient(#7ecbff,#c8f6ff);font-family:sans-serif;}
 
 #game{position:relative;height:65vh;overflow:hidden;}
-#world{position:absolute;bottom:0;left:0;height:100%;width:6000px;}
+#world{position:absolute;bottom:0;left:0;height:100%;width:8000px;}
 
 #ground{position:absolute;bottom:0;height:80px;width:100%;background:#2ecc71;}
 
@@ -29,18 +29,17 @@ border-radius:20px;
 }
 
 .palm{position:absolute;font-size:120px;}
+.dino{position:absolute;font-size:50px;}
 
 .hill{
 position:absolute;
 bottom:80px;
 height:120px;
 width:200px;
-left:400px;
 background:linear-gradient(180deg,#6be585,#2ecc71,#1e9e5a);
 border-radius:80px 80px 0 0;
 }
 
-/* 🟣 båt */
 #boat{
 position:absolute;
 width:120px;
@@ -49,42 +48,15 @@ bottom:110px;
 background:url("67.jpg") center/contain no-repeat;
 }
 
-/* 🏁 FLAGGA */
-#goal{
+#goal{position:absolute;font-size:80px;bottom:80px;}
+
+#ui{
 position:absolute;
-left:1500px;
-bottom:80px;
-font-size:80px;
+top:10px;
+left:10px;
+font-size:20px;
 }
 
-/* 🎉 WIN SCREEN */
-#win{
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:rgba(0,0,0,0.7);
-display:none;
-justify-content:center;
-align-items:center;
-flex-direction:column;
-color:white;
-font-size:32px;
-z-index:10;
-}
-
-#win button{
-margin-top:20px;
-font-size:24px;
-padding:10px 20px;
-border-radius:10px;
-border:none;
-background:#2ecc71;
-color:white;
-}
-
-/* SPELARE */
 #player{
 position:absolute;
 left:40%;
@@ -103,7 +75,6 @@ background-size:contain;
 transform:translateY(20px);
 }
 
-/* HUND */
 #dog{
 position:absolute;
 width:60px;
@@ -119,7 +90,6 @@ object-fit:contain;
 transform:translateY(10px);
 }
 
-/* KONTROLLER */
 #controls{
 display:flex;
 justify-content:center;
@@ -142,39 +112,13 @@ border:none;
 <body>
 
 <div id="game">
+<div id="ui">⭐ 0</div>
 
-<div id="world">
-
-<div id="ground"></div>
-
-<div class="hill"></div>
-
-<div class="water" style="left:700px;width:300px;"></div>
-
-<div class="island" style="left:760px;"></div>
-<div class="island" style="left:880px;"></div>
-
-<div class="palm" style="left:750px;bottom:80px;">🌴</div>
-<div class="palm" style="left:870px;bottom:80px;">🌴</div>
-
-<div class="lava" style="left:1100px;width:300px;"></div>
-
-<div id="boat"></div>
-
-<!-- 🏁 mål -->
-<div id="goal">🏁</div>
-
-</div>
+<div id="world"></div>
 
 <div id="player"><div id="playerSprite"></div></div>
 <div id="dog"><img src="dog-sit.png"></div>
 
-</div>
-
-<!-- 🎉 WIN -->
-<div id="win">
-<div>🎉 Du klarade banan!</div>
-<button onclick="location.reload()">Spela igen</button>
 </div>
 
 <div id="controls">
@@ -185,129 +129,170 @@ border:none;
 
 <script>
 
-/* STATE */
-let vx=0, vy=0, move=0
-let onGround=true
-let worldX=0
-let won=false
+/* ===== STATE ===== */
+let vx=0,vy=0,move=0,onGround=true,worldX=0
+let score=0,level=1
 
 const player=document.getElementById("player")
 const dog=document.getElementById("dog")
 const world=document.getElementById("world")
-const boat=document.getElementById("boat")
-const win=document.getElementById("win")
+const ui=document.getElementById("ui")
 
-const hill={x:400,w:200,h:120}
-const islands=[{x:760,w:140},{x:880,w:140}]
-const water={x:700,w:300}
-const lava={x:1100,w:300}
-const goalX=1500
+let boat,boatX,boatDir
+let hills=[],islands=[],water,lava,goalX
 
-let boatX=1150
-let boatDir=1
-const boatW=120
-const boatY=110
+/* 🔊 ljud */
+const jumpSound=new Audio("https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg")
+const winSound=new Audio("https://actions.google.com/sounds/v1/cartoon/concussive_drum_hit.ogg")
+
+/* ===== GENERERA BANA ===== */
+function buildLevel(){
+
+world.innerHTML=""
+worldX=0
+
+/* mark */
+let ground=document.createElement("div")
+ground.id="ground"
+world.appendChild(ground)
+
+/* kulle */
+hills=[{x:400,w:200,h:120}]
+let h=document.createElement("div")
+h.className="hill"
+h.style.left="400px"
+h.style.width="200px"
+world.appendChild(h)
+
+/* vatten */
+water={x:700,w:300+level*50}
+let w=document.createElement("div")
+w.className="water"
+w.style.left=water.x+"px"
+w.style.width=water.w+"px"
+world.appendChild(w)
+
+/* öar */
+islands=[]
+for(let i=0;i<3;i++){
+let x=water.x+60+i*120
+islands.push({x,w:140})
+
+let el=document.createElement("div")
+el.className="island"
+el.style.left=x+"px"
+world.appendChild(el)
+}
+
+/* lava */
+lava={x:1100,w:300+level*50}
+let l=document.createElement("div")
+l.className="lava"
+l.style.left=lava.x+"px"
+l.style.width=lava.w+"px"
+world.appendChild(l)
+
+/* båt */
+boat=document.createElement("div")
+boat.id="boat"
+world.appendChild(boat)
+boatX=lava.x+50
+boatDir=1
+
+/* mål */
+goalX=1500+level*200
+let g=document.createElement("div")
+g.id="goal"
+g.innerText="🏁"
+g.style.left=goalX+"px"
+world.appendChild(g)
+
+/* dinos */
+for(let i=0;i<3;i++){
+let d=document.createElement("div")
+d.className="dino"
+d.innerText="🦖"
+d.style.left=(500+i*300)+"px"
+d.style.bottom="80px"
+world.appendChild(d)
+}
+
+}
 
 /* INPUT */
 function stop(){move=0}
-function pressRight(){move=1}
-function pressLeft(){move=-1}
-
-right.addEventListener("touchstart",pressRight)
-left.addEventListener("touchstart",pressLeft)
-right.addEventListener("mousedown",pressRight)
-left.addEventListener("mousedown",pressLeft)
-
-right.addEventListener("touchend",stop)
-left.addEventListener("touchend",stop)
-right.addEventListener("mouseup",stop)
-left.addEventListener("mouseup",stop)
-
-window.addEventListener("touchend",stop)
+right.onmousedown=()=>move=1
+left.onmousedown=()=>move=-1
+right.onmouseup=stop
+left.onmouseup=stop
 window.addEventListener("mouseup",stop)
 
-/* HOPP */
-function jumpNow(){
+/* hopp */
+jump.onmousedown=()=>{
 vy=14
 onGround=false
+score+=10
+ui.innerText="⭐ "+score
+jumpSound.play()
 }
-jump.addEventListener("touchstart",jumpNow)
-jump.addEventListener("mousedown",jumpNow)
 
 /* LOOP */
 function loop(){
-
-if(won) return
 
 let px=-worldX+player.offsetLeft+player.offsetWidth*0.4
 let bottom=parseFloat(player.style.bottom||80)
 
 vx=move*5
 
-/* KULLE */
-if(px>hill.x-10&&px<hill.x&&bottom<=82&&vx>0){vx=0}
-
-if(px>hill.x&&px<hill.x+hill.w&&vy<0&&bottom>80+hill.h-10){
-bottom=80+hill.h
-vy=0
-onGround=true
+/* kulle */
+if(px>390&&px<400&&bottom<=82&&vx>0){vx=0}
+if(px>400&&px<600&&vy<0&&bottom>190){
+bottom=200;vy=0;onGround=true
 }
 
-/* ÖAR */
+/* öar */
 let onIsland=false
 for(let i of islands){
-let top=120
-if(px>i.x&&px<i.x+i.w&&vy<0&&bottom>=top-15){
-bottom=top
-vy=0
-onGround=true
-onIsland=true
+if(px>i.x&&px<i.x+i.w&&vy<0&&bottom>=105){
+bottom=120;vy=0;onGround=true;onIsland=true
 }
 }
 
-/* BÅT */
+/* båt */
 let onBoat=false
-let boatTop=boatY+20
-
-if(px>boatX&&px<boatX+boatW&&vy<0&&bottom>=boatTop-10){
-bottom=boatTop
-vy=0
-onGround=true
-onBoat=true
+if(px>boatX&&px<boatX+120&&vy<0&&bottom>=120){
+bottom=130;vy=0;onGround=true;onBoat=true
 worldX-=boatDir*2
 }
 
-/* WIN */
-if(px > goalX){
-won=true
-win.style.display="flex"
+/* win */
+if(px>goalX){
+winSound.play()
+level++
+buildLevel()
 }
 
-/* WORLD */
+/* world */
 worldX-=vx
 world.style.left=worldX+"px"
 
-/* BÅT */
+/* boat */
 boatX+=boatDir*2
-if(boatX<1100||boatX>1300)boatDir*=-1
+if(boatX<lava.x||boatX>lava.x+lava.w-120)boatDir*=-1
 boat.style.left=boatX+"px"
 
-/* GRAVITY */
+/* gravity */
 vy-=0.7
 bottom+=vy
 
-/* MARK */
+/* mark */
 if(!(px>water.x&&px<water.x+water.w)&&
    !(px>lava.x&&px<lava.x+lava.w)&&
    !onIsland&&!onBoat){
-if(bottom<=80){
-bottom=80
-vy=0
-onGround=true
-}
+if(bottom<=80){bottom=80;vy=0;onGround=true}
 }
 
-/* APPLY */
+/* apply */
 player.style.bottom=bottom+"px"
 dog.style.left=(player.offsetLeft-60)+"px"
 dog.style.bottom=bottom+"px"
@@ -315,8 +300,10 @@ dog.style.bottom=bottom+"px"
 requestAnimationFrame(loop)
 }
 
+/* start */
+buildLevel()
 loop()
 
 </script>
 </body>
-</html> 
+</html>
