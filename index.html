@@ -49,7 +49,7 @@ line-height:1;
 #game{position:relative;height:65vh;overflow:hidden;}
 #world{position:absolute;bottom:0;left:0;height:100%;width:6000px;}
 
-/* 🟢 MARK (DIN BILD 🔥) */
+/* 🟢 MARK (STILLA) */
 #ground{
 position:absolute;
 bottom:0;
@@ -58,13 +58,6 @@ width:100%;
 
 background:url("ground.PNG") repeat-x;
 background-size:500px 80px;
-
-animation:groundMove 1.5s linear infinite;
-}
-
-@keyframes groundMove{
-0%{background-position-x:0;}
-100%{background-position-x:-500px;}
 }
 
 /* 🌊 vatten */
@@ -93,23 +86,24 @@ background:#ffe066;
 border-radius:20px;
 }
 
-/* 🌄 kulle */
+/* 🌄 KULLAR (BILDER 🔥) */
 .hill{
 position:absolute;
 bottom:80px;
 height:120px;
 width:200px;
-background:#2ecc71;
-border-radius:80px 80px 0 0;
+
+background-size:contain;
+background-repeat:no-repeat;
+background-position:bottom;
 }
 
-/* 🟣 BÅT (DIN BILD 🔥) */
+/* 🟣 BÅT */
 #boat{
 position:absolute;
 width:160px;
 height:100px;
 bottom:100px;
-
 background:url("67.PNG") center/contain no-repeat;
 }
 
@@ -198,7 +192,10 @@ border:none;
 
 <div id="ground"></div>
 
-<div class="hill" style="left:400px;"></div>
+<!-- 🌄 KULLAR -->
+<div class="hill" style="left:400px;background-image:url('hill1.PNG');"></div>
+<div class="hill" style="left:1000px;background-image:url('hill2.PNG');"></div>
+<div class="hill" style="left:1600px;background-image:url('hill1.PNG');"></div>
 
 <div class="water" style="left:700px;width:300px;"></div>
 
@@ -239,7 +236,7 @@ const boat=document.getElementById("boat")
 const mountains=document.getElementById("mountains")
 const trees=document.getElementById("trees")
 
-const hill={x:400,w:200,h:120}
+const hill={x:400,w:200,h:120} /* första används i fysik */
 const islands=[{x:760,w:140},{x:880,w:140}]
 const water={x:700,w:300}
 const lava={x:1100,w:300}
@@ -285,7 +282,7 @@ let bottom=parseFloat(player.style.bottom||80)
 
 vx=move*5
 
-/* kulle */
+/* kulle (första) */
 if(px>390&&px<400&&bottom<=82&&vx>0){vx=0}
 if(px>400&&px<600&&vy<0&&bottom>190){
 bottom=200;vy=0;onGround=true
@@ -306,7 +303,6 @@ bottom=140
 vy=0
 onGround=true
 onBoat=true
-
 worldX-=boatDir*2
 }
 
